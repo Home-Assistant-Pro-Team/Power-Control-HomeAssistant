@@ -67,7 +67,8 @@ template:
         state: >-
           {% set a = states('sensor.check_ultimo_acceso').split() %}
           {% set b = state_attr('sensor.check_ultimo_acceso','old_state').split() %}
-            {{ (a|list|reject('in', b )|list)[0]|default('Spento') }}
+          {% set result = (a|list|reject('in', b )|list)[0] %}
+            {{ result if result is defined else 'Nessuno' }}
   - trigger:
     - platform: state
       entity_id: sensor.lista_dispositivi_accesi
@@ -190,7 +191,7 @@ automation:
             - alias: Spegni ultimo device della lista se acceso negli ultimi 30sec per distacco urgente ed escludilo dal ripristino
               if: 
                 - "{{ power  > states('input_number.distacco_urgente')|int(0) }}"
-                - "{{ now() < states['sensor.ultimo_dispositivo_acceso'].last_changed + timedelta(seconds=30) and not is_state('sensor.ultimo_dispositivo_acceso', 'Spento') }}"
+                - "{{ now() < states['sensor.ultimo_dispositivo_acceso'].last_changed + timedelta(seconds=30) and not is_state('sensor.ultimo_dispositivo_acceso', 'Nessuno') }}"
               then:
                 - alias: INVIA NOTIFICA
                   event: customizations
