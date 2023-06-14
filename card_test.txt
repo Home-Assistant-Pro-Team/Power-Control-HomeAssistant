@@ -1,34 +1,26 @@
 type: vertical-stack
 cards:
-  - type: markdown
-    content: |-
-      **Lista carichi**
-      {% from 'power_control.jinja' import entities_control %}
-        {% for entities in entities_control().split() %}
-          {{ states[entities].name -}}
-        {% endfor %}
-      **Esclusi dal ripristino**
-        {% for t in state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %}
-          {{ t -}}
-        {% endfor %}
   - type: entities
     entities:
-      - entity: input_number.ritardo_distacco_carico
-        name: Ritardi distacchi
+      - entity: automation.power_control
         type: custom:multiple-entity-row
-        state_header: Distacco
+        toggle: true
+        name: Attiva
+        state_header: OFF/ON
+      - entity: input_number.ritardo_distacco_carico
+        name: Ritardo
+        type: custom:multiple-entity-row
+        state_header: DISTACCO
         state_color: false
         icon: mdi:calendar
         entities:
           - entity: input_number.ritardo_ripristino_carico
             name: RIPRISTINO
       - entity: input_number.distacco_urgente
-        name: DISTACCO
+        name: Soglie
         type: custom:multiple-entity-row
         state_header: Distacco Urgentte
         entities:
-          - entity: automation.power_control
-            toggle: true
           - entity: input_number.distacco_carico
       - entity: automation.notify_control_power_push
         name: NOTIFCHE
@@ -36,7 +28,24 @@ cards:
         state_header: PUSH
         toggle: true
         entities:
-          - entity: select.escludi_dispositivi_dal_ripristino_carico
           - entity: automation.notify_control_power_media_player
             toggle: true
-            name: media
+            name: MEDIA_PLAYER
+      - entity: select.escludi_dispositivi_dal_ripristino_carico
+  - type: markdown
+    content: >-
+      {% from 'power_control.jinja' import power_control %}
+       Consumo istantaneo: {{ states[ (power_control()|from_json)['Sensore W']].state|int(0) }} W
+
+      **Lista carichi**
+
+      {% from 'power_control.jinja' import entities_control %}
+        {% for entities in entities_control().split() %}
+          {{ states[entities].name -}}
+        {% endfor %}
+      **Esclusi dal ripristino**
+        {% for t in state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %}
+          {{ states[t].name -}}
+        {% endfor %}
+      **Ultimo dispositivo acceso**:
+      {{states('sensor.ultimo_dispositivo_acceso')}}
