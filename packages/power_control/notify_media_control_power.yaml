@@ -1,0 +1,49 @@
+
+automation:
+- alias: notify_control_power_media_player
+  id: notify_control_power_media_player
+  mode: queued
+  variables:
+      volume: 0.5
+      alexa: >-
+        {% from 'personal.jinja' import media_players %}
+        {% set media = media_players('alexa_media').split() %}
+        {{ media}}
+      google: >-
+        {% from 'personal.jinja' import media_players %}
+        {% set media = media_players('cast').split() %}
+        {{ media}}
+  trigger:
+    - platform: event
+      event_type: customizations
+      event_data:
+        types: notify_power_control
+  action:
+      - alias: Imposta volume Notifica
+        service: media_player.volume_set
+        data:
+          entity_id: "{{expand(google + alexa)|map(attribute='entity_id')|list}}"
+          volume_level: "{{ trigger.event.data.volume|default(volume) }}"
+
+      - alias: INVIA NOTIFICA
+        parallel:
+
+        - alias: Invia notifica ad Google
+          if: >-
+            {{google|count > 0}}
+          then:
+            - service: tts.google_translate_say
+              data:
+                entity_id: "{{google}}"
+                message: "{{ trigger.event.data.message |default('Messaggio non impostato')}}"
+
+        - alias: Invia notifica ad Alexa
+          if: >-
+            {{alexa|count > 0}}
+          then:
+            service: notify.alexa_media
+            data:
+              target: "{{alexa}}" 
+              data:
+                method: spoken
+              message: "{{ trigger.event.data.message |default('Messaggio non impostato')}}"

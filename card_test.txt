@@ -1,0 +1,42 @@
+type: vertical-stack
+cards:
+  - type: markdown
+    content: |-
+      **Lista carichi**
+      {% from 'power_control.jinja' import entities_control %}
+        {% for entities in entities_control().split() %}
+          {{ states[entities].name -}}
+        {% endfor %}
+      **Esclusi dal ripristino**
+        {% for t in state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %}
+          {{ t -}}
+        {% endfor %}
+  - type: entities
+    entities:
+      - entity: input_number.ritardo_distacco_carico
+        name: Ritardi distacchi
+        type: custom:multiple-entity-row
+        state_header: Distacco
+        state_color: false
+        icon: mdi:calendar
+        entities:
+          - entity: input_number.ritardo_ripristino_carico
+            name: RIPRISTINO
+      - entity: input_number.distacco_urgente
+        name: DISTACCO
+        type: custom:multiple-entity-row
+        state_header: Distacco Urgentte
+        entities:
+          - entity: automation.power_control
+            toggle: true
+          - entity: input_number.distacco_carico
+      - entity: automation.notify_control_power_push
+        name: NOTIFCHE
+        type: custom:multiple-entity-row
+        state_header: PUSH
+        toggle: true
+        entities:
+          - entity: select.escludi_dispositivi_dal_ripristino_carico
+          - entity: automation.notify_control_power_media_player
+            toggle: true
+            name: media
