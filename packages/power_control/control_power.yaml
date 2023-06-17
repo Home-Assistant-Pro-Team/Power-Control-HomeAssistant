@@ -45,9 +45,9 @@ template:
           {% from 'power_control.jinja' import entities_control %}
           {% set output = namespace(numbers=[]) %}
             {% for entities in entities_control().split() %}
-              {%- set output.numbers = output.numbers + [states[entities].name ] -%}
+              {% set output.numbers = output.numbers + [states[entities].name ] %}
             {% endfor %}
-              {{['RESET'] + output.numbers}}
+              {{ ['RESET'] + output.numbers }}
         select_option:
         - event: customizations
           event_data:
@@ -65,7 +65,7 @@ template:
           {% from 'power_control.jinja' import list_device %}
           {% set power = list_device().split() %}
           {% for entities in list_device().split() %}
-              {{ states[entities].name -}}
+              {{ states[entities].name }}
             {% endfor %}
   - sensor:
       - name: Ultimo dispositivo acceso
@@ -100,14 +100,14 @@ template:
               {% set lists = this.attributes.list_exclude %}
                 {% if option == 'RESET' %}
                 {% else %}
-                  {%- for device in states if device.name|lower == trigger.event.data.sensor_select|lower and device.entity_id in list_power -%}
-                    {% if device.entity_id in lists%}
-                      {{lists|list|select('ne',device.entity_id)|list }}
-                    {% else  %}
+                  {% for device in states if device.name|lower == trigger.event.data.sensor_select|lower and device.entity_id in list_power %}
+                    {% if device.entity_id in lists %}
+                      {{ lists|list|select('ne',device.entity_id)|list }}
+                    {% else %}
                       {% set ns = namespace(entities=lists|list|select('ne', device.entity_id)|list) %}
                         {{ ns.entities + [device.entity_id] }}
-                    {%- endif -%}
-                  {%- endfor -%}
+                    {% endif %}
+                  {% endfor %}
                 {% endif %}
 
 input_text:
@@ -130,7 +130,7 @@ automation:
   trigger:
 
   - platform: template
-    value_template: "{{now() > as_datetime(state_attr('timer.distacco_carico', 'finishes_at')) -  timedelta(minutes=2) }}"
+    value_template: "{{ now() > as_datetime(state_attr('timer.distacco_carico', 'finishes_at')) - timedelta(minutes=2) }}"
     id: preavviso_distacco
 
   - platform: template
@@ -265,7 +265,7 @@ automation:
                               service: input_text.set_value
                               data:
                                 value: >-
-                                  {{ power_device[0] + ( ' ' + states('input_text.list_power_control') if not is_state('input_text.list_power_control', 'none') else ' ')}}
+                                  {{ power_device[0] + ( ' ' + states('input_text.list_power_control') if not is_state('input_text.list_power_control', 'none') else ' ') }}
                               target:
                                 entity_id: input_text.list_power_control
                             - alias: INVIA NOTIFICA
@@ -295,14 +295,14 @@ automation:
     if:
       - alias: Controllo se è scattato il distacco carichi
         condition: template
-        value_template: "{{trigger.id == 'ripristino_carico' and is_state('input_boolean.check_distacco', 'on')}} "
+        value_template: "{{ trigger.id == 'ripristino_carico' and is_state('input_boolean.check_distacco', 'on') }}"
     then: 
       - alias: Ripristino carico
         repeat:
           for_each: >-
             {% set output = namespace(state_home=[]) %}
             {% for device in states if device.entity_id in state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %}
-              {%  set output.state_home = output.state_home +  [device.entity_id] %}
+              {% set output.state_home = output.state_home +  [device.entity_id] %}
             {% endfor %}
               {{ states('input_text.list_power_control').split()|reject('in', output.state_home)|list }}
           sequence:
