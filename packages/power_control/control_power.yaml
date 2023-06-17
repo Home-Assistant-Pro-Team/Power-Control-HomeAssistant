@@ -5,8 +5,8 @@ input_number:
     icon: mdi:timelapse
     unit_of_measurement: 'min'
     min: 3
-    max: 200
-    step: 1
+    max: 183
+    step: 5
   ritardo_ripristino_carico:
     name: Ritardo Ripristino Carico
     mode: box
@@ -14,23 +14,28 @@ input_number:
     unit_of_measurement: 'sec'
     min: 1
     max: 360
-    step: 1
+    step: 10
   distacco_carico:
     name: Distacco carico
     icon: mdi:flash
-    min: 1
+    min: 99
     max: 8000
-    step: 1.0
-    unit_of_measurement: 'w'
+    step: 100
+    unit_of_measurement: 'W'
     mode: box
   distacco_urgente:
     name: Distacco Urgente
     icon: mdi:flash
-    min: 1
+    min: 99
     max: 8000
-    step: 1.0
-    unit_of_measurement: 'w'
+    step: 100
+    unit_of_measurement: 'W'
     mode: box
+
+timer:
+  distacco_carico:
+    restore: true
+    name: Ritardo Distacco Carico
 
 template:
   - select:
@@ -123,30 +128,31 @@ automation:
       {% from 'power_control.jinja' import power_control %}
         {{ states[(power_control()|from_json)['Sensore W']].state|int(0) }}
   trigger:
+
   - platform: template
-    value_template: >-
-      {% from 'power_control.jinja' import power_control %}
-      {% set power = states[(power_control()|from_json)['Sensore W']].state|int(0) %}
-        {{ power > states('input_number.distacco_carico')|int(0) }}
-    for: 
-      #minutes: "{{ states('input_number.ritardo_distacco_carico')|int(0) - 2 }}"
-      seconds: "{{ states('input_number.ritardo_distacco_carico')|int(0) - 2 }}"
+    value_template: "{{now() > as_datetime(state_attr('timer.distacco_carico', 'finishes_at')) -  timedelta(minutes=2) }}"
     id: preavviso_distacco
+
   - platform: template
     value_template: >-
       {% from 'power_control.jinja' import power_control %}
       {% set power = states[(power_control()|from_json)['Sensore W']].state|int(0) %}
         {{ power > states('input_number.distacco_carico')|int(0) }}
-    for: 
-      #minutes: "{{ states('input_number.ritardo_distacco_carico')|int(0) }}"
-      seconds: "{{ states('input_number.ritardo_distacco_carico')|int(0) }}"
     id: soglia_distacco
-  - platform: template    
+
+  - platform: template
     value_template: >-
       {% from 'power_control.jinja' import power_control %}
       {% set power = states[(power_control()|from_json)['Sensore W']].state|int(0) %}
         {{ power > states('input_number.distacco_urgente')|int(0) }}
-    id: soglia_distacco
+    id: inizio_distacco
+
+  - platform: event
+    event_type: timer.finished 
+    event_data:
+      entity_id: timer.distacco_carico
+    id: inizio_distacco
+
   - platform: template
     value_template: >-
       {% from 'power_control.jinja' import power_control %}
@@ -155,6 +161,7 @@ automation:
     for: 
       seconds: "{{ states('input_number.ritardo_ripristino_carico')|int(0) }}"
     id: ripristino_carico
+
   action:
 
   - alias: Notifica superamento soglia 2 minuti prima del distacco
@@ -170,10 +177,26 @@ automation:
           title: Consumi Elevati
           message: "{{ 'Superati i ' + power|string + 'watt.' }}"
 
-  - alias: Distacco carichi
+  - alias: Raggiunta soglia per distacco avvia timer
     if:
       - "{{ trigger.id == 'soglia_distacco' }}"
     then: 
+      - alias: Imposta timer di attesa
+        service: timer.start
+        data:
+          duration: "00:{{ states('input_number.ritardo_distacco_carico')|int(0) }}:00"
+        target:
+          entity_id: timer.distacco_carico
+
+  - alias: Distacco carichi
+    if:
+      - "{{ trigger.id == 'inizio_distacco' }}"
+    then: 
+      - alias: Cancella timer per evitare altro trigger
+        service: timer.cancel
+        target:
+          entity_id: timer.distacco_carico
+
       - alias: Elimina lista text 
         service: input_text.set_value
         data:
@@ -283,6 +306,10 @@ automation:
             {% endfor %}
               {{ states('input_text.list_power_control').split()|reject('in', output.state_home)|list }}
           sequence:
+            - alias: Cancella timer per evitare altro trigger
+              service: timer.cancel
+              target:
+                entity_id: timer.distacco_carico
             - alias: INVIA NOTIFICA
               event: customizations
               event_data:
