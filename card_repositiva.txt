@@ -1,0 +1,160 @@
+type: custom:button-card
+name: Power Control
+variables:
+  power_meter: sensor.shellyem_b168e7_channel_1_power
+show_icon: false
+aspect_ratio: 1/1
+styles:
+  card:
+    - background-color: '#333'
+    - border-radius: 20px
+    - padding: 8px
+  name:
+    - font-weight: bold
+    - font-size: 34px
+    - align-self: flex-start
+    - justify-self: flex-center
+    - padding-top: 7px
+    - padding-bottom: 13px
+    - padding-left: 10px
+    - letter-spacing: '-2.0px'
+    - color: var(--secondary-text-color)
+    - display: |
+        [[[
+          if (states['switch.abat_jour'].state == 'on')
+            return "block";
+          return "none";
+        ]]]
+  custom_fields:
+    watt:
+      - position: absolute
+      - top: 50px
+      - align-self: flex-start
+      - justify-self: center
+      - overflow: hidden
+      - max-width: 100%
+    logo:
+      - position: absolute
+      - top: 3%
+      - padding-right: 250px
+      - justify-self: center
+      - max-width: 100%
+      - flex-basis: 100%
+    graph:
+      - position: absolute
+      - top: 27%
+      - margin-right: 80px
+      - padding-right: 20px
+      - justify-self: center
+      - width: calc(90% - 90px)
+    lista:
+      - position: absolute
+      - top: 87%
+      - justify-self: start
+      - width: calc(25% - 40px)
+      - max-width: 100%
+      - flex-basis: 100%
+custom_fields:
+  watt:
+    card:
+      type: custom:button-card
+      name: |
+        [[[
+            return 'Instantaneo '+ states[variables.power_meter].state + 'W';
+        ]]]
+      styles:
+        card:
+          - background-color: transparent
+          - border-style: none
+          - margin: auto
+        name:
+          - align-self: middle
+          - justify-self: centre
+          - font-size: 15px
+          - font-color: '#b4c3cd'
+  logo:
+    card:
+      type: custom:button-card
+      color: transparent
+      entity: automation.power_control
+      show_name: true
+      name: |
+        [[[
+         if (states['automation.power_control'].state == 'on') return "Attivo";
+         else return "Spento";
+        ]]]
+      icon: |
+        [[[
+         if (states['automation.power_control'].state == 'on') return "mdi:head-flash";
+         else return "mdi:hand-back-right-off";
+        ]]]
+      show_entity_picture: false
+      styles:
+        card:
+          - background-color: transparent
+          - border-style: none
+          - width: 100%
+          - flex-basis: 100%
+        name:
+          - font-weight: bold
+        icon:
+          - width: 45px
+          - height: 45px
+          - color: |
+              [[[
+                 if (states['automation.power_control'].state == 'on') return "white   ";
+                 else return "#252525";
+               ]]]
+          - padding: 6px
+          - border-radius: 30%
+          - background-color: |
+              [[[
+                 if (states['automation.power_control'].state == 'on') return "OliveDrab   ";
+                 else return "#606060";
+               ]]]
+      tap_action:
+        action: call-service
+        service: automation.toggle
+        service_data:
+          entity_id: automation.power_control
+  graph:
+    card:
+      type: custom:apexcharts-card
+      graph_span: 3h
+      header:
+        show: true
+        show_states: false
+        colorize_states: true
+      series:
+        - entity: '[[[return variables.power_meter ]]]'
+          stroke_width: 2
+          show:
+            extremas: true
+      card_mod:
+        style: |
+          ha-card {
+            border: 0px;
+            background: none;
+            width: 130%;
+            
+            padding-right: 10px
+            }
+  lista:
+    card:
+      type: custom:button-card
+      icon: mdi:view-list-outline
+      show_state: false
+      show_icon: true
+      show_name: false
+      styles:
+        card:
+          - background-color: '#4B5975'
+          - border-radius: 18px
+          - border-style: none
+          - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
+        icon:
+          - width: calc(60% - 5px)
+          - color: white
+          - align-self: start
+          - text-align: start
+          - padding: 0px
