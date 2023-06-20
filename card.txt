@@ -18,6 +18,8 @@ custom_fields:
   marquee:
     card:
       type: custom:button-card
+      tap_action:
+        action: none
       style: |
         ha-card {  
           background: none;  
@@ -41,6 +43,8 @@ custom_fields:
             return 'Instantaneo '+ states[variables.power_meter].state + 'W'; 
         ]]] 
       show_label: true
+      tap_action:
+        action: none
       name: Power Control
       styles:
         grid:
@@ -198,9 +202,6 @@ custom_fields:
           data:
             card_mod:
               style: |
-                ha-dialog { 
-                  --mdc-dialog-min-width: 400px !important; 
-                  } 
                 :host { 
                   --ha-card-background: rgba(50,65,85,1); 
                   --mdc-dialog-scrim-color: rgba(15,15,15,0.9); 
@@ -258,11 +259,11 @@ custom_fields:
                   - border-radius: 20px
                 grid:
                   - grid-template-areas: |-
-                      " tempi     soglie        " 
-                      " rit_dist  dis_carichi   "   
-                      " rit_ripr  dis_emergenza "   
-                      " excl      excl          "
-                  - grid-template-columns: repeat(2, 1fr)
+                      " . tempi     soglie        . " 
+                      " . rit_dist  dis_carichi   . "   
+                      " . rit_ripr  dis_emergenza . "   
+                      " . excl      excl          . "
+                  - grid-template-columns: 0.1vw repeat(2, 1fr) 0.1vw
                   - grid-column-gap: 0.3em
                   - grid-row-gap: 0.3em
               custom_fields:
