@@ -1,148 +1,144 @@
 type: custom:button-card
 variables:
-  power_meter: sensor.shellyem_b168e7_channel_1_power
+  power_meter: sensor.shelly_em_assorbimento_casa
 styles:
   card:
     - background-color: '#333'
     - border-radius: 20px
   grid:
     - grid-template-areas: |-
-        " logo logo watt watt orologio  "
-        " logo logo stato stato . "
-        " graph graph graph graph graph "  
-        " . lista setting  push media  "  
-    - grid-template-columns: 1.4vw repeat(4, 1fr)
-    - grid-template-rows: min-content min-content min-content
+        " logo logo watt watt watt . " 
+        " . marquee marquee marquee marquee . " 
+        " graph graph graph graph graph graph "   
+        " . lista setting  push media . "   
+    - grid-template-columns: 1.4vw repeat(4, 1fr) 1.3vw
+    - grid-template-rows: min-content 1vw min-content min-content
     - grid-column-gap: 0.1em
 custom_fields:
-  orologio:
+  marquee:
     card:
       type: custom:button-card
+      style: |
+        ha-card {  
+          background: none;  
+          border: 100px;  
+          }  
       name: |
         [[[
-          var date = new Date();
-          var hours = date.getHours();
-          var minutes = date.getMinutes();
-          var seconds = date.getSeconds();
-          return hours.toString().padStart(2, '0') + ':' + minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
+          if (states['sensor.marquee_power_control'].state !== 'unknown') { 
+            return `<marquee style="width: 100%; margin-right: 150px; margin-top: 14px;"><span style='color: var(--secondary-text-color);'>${states['sensor.marquee_power_control'].state}</span></marquee>`; 
+          } else { 
+            return `<marquee style="width: 100%; margin-right: 150px; margin-top: 14px;"><span style='color: var(--secondary-text-color);'>In attesa della prima attivazione</span></marquee>`; 
+          } 
         ]]]
-      styles:
-        card:
-          - width: 95px
-          - height: 95px
-          - border-style: none
-          - background: none
-          - margin: 0px
-          - font-size: calc(140% - 4px)
-          - text-align: center
-          - margin-top: '-30px'
-          - justify-content: start
-          - align-items: center
-        name:
-          - margin-top: 5px
-  stato:
-    card:
-      type: custom:button-card
-      entity: timer.fine_richiesta_disattivazione_allarme_batteria_scarica
-      layout: name_state
-      name: |
-        [[[
-          if (states['timer.fine_richiesta_disattivazione_allarme_batteria_scarica'].state !== 'idle') {
-            return 'Distacco tra ';
-          } else {
-            return 'Assorbibento: Ok👍';
-          }
-        ]]]
-      show_label: false
-      show_state: |
-        [[[
-          return (states['timer.fine_richiesta_disattivazione_allarme_batteria_scarica'].state !== 'idle');
-        ]]]
-      styles:
-        card:
-          - background-color: |
-              [[[
-                if (states['timer.fine_richiesta_disattivazione_allarme_batteria_scarica'].state !== 'idle') {
-                  return 'red';
-                } else {
-                  return 'var(--secondary-background-color)';
-                }
-              ]]]
-          - border-style: none
-          - width: calc(140% - 3px)
-          - height: 30px
-          - margin-top: '-45px'
-          - margin-left: 6px
-          - justify-self: left
-        name:
-          - margin-left: '-4px'
-          - margin-top: '-5px'
   watt:
     card:
       type: custom:button-card
+      variables:
+        power_meter: sensor.shelly_em_assorbimento_casa
       label: |
-        [[[
-            return 'Instantaneo '+ states[variables.power_meter].state + 'W';
-        ]]]
+        [[[ 
+            return 'Instantaneo '+ states[variables.power_meter].state + 'W'; 
+        ]]] 
       show_label: true
       name: Power Control
       styles:
+        grid:
+          - grid-template-areas: |-
+              " l"
+              " n " 
+              " timer "
         label:
           - font-color: var(--secondary-text-color)
-          - font-size: calc(105% - 3px)
           - justify-self: left
-          - padding-left: 35px
-          - margin-top: '-50px'
+          - padding-left: 28px
+          - margin-top: 14px
         card:
           - background-color: transparent
           - border-style: none
-          - padding-top: 25px
+          - height: 120px
         name:
           - font-weight: bold
-          - font-size: calc(195% - 3px)
+          - font-size: clamp(16px, 27px, 35px)
           - letter-spacing: '-2.0px'
           - justify-self: left
           - padding-left: 25px
           - color: var(--secondary-text-color)
+      custom_fields:
+        timer:
+          card:
+            type: custom:button-card
+            entity: timer.distacco_carico
+            layout: name_state
+            name: |
+              [[[ 
+                if (states['timer.distacco_carico'].state !== 'idle') { 
+                  return 'Distacco tra '; 
+                } else { 
+                  return 'Assorbibento: Ok👍'; 
+                } 
+              ]]] 
+            show_icon: false
+            show_state: |
+              [[[ 
+                return (states['timer.distacco_carico'].state !== 'idle'); 
+              ]]] 
+            styles:
+              card:
+                - background-color: |
+                    [[[ 
+                      if (states['timer.distacco_carico'].state !== 'idle') { 
+                        return 'red'; 
+                      } else { 
+                        return 'var(--secondary-background-color)'; 
+                      } 
+                    ]]] 
+                - border-style: none
+                - width: calc(140% - 5px)
+                - height: 30px
+                - margin-left: 6px
+                - justify-self: left
+              name:
+                - margin-left: '-4px'
+                - margin-top: '-4px'
   logo:
     card:
       type: custom:button-card
       color: transparent
       entity: automation.power_control
       name: |
-        [[[
-         if (states['automation.power_control'].state == 'on') return "Attivo";
-         else return "Spento";
-        ]]]
+        [[[ 
+         if (states['automation.power_control'].state == 'on') return "Attivo"; 
+         else return "Spento"; 
+        ]]] 
       icon: |
-        [[[
-         if (states['automation.power_control'].state == 'on') return "mdi:head-flash";
-         else return "mdi:hand-back-right-off";
-        ]]]
+        [[[ 
+         if (states['automation.power_control'].state == 'on') return "mdi:head-flash"; 
+         else return "mdi:hand-back-right-off"; 
+        ]]] 
       show_entity_picture: false
       styles:
         card:
           - background-color: |
-              [[[
-                 if (states['automation.power_control'].state == 'on') return "OliveDrab   ";
-                 else return "#606060";
-               ]]]
+              [[[ 
+                 if (states['automation.power_control'].state == 'on') return "OliveDrab   "; 
+                 else return "#606060"; 
+               ]]] 
           - border-radius: 30%
           - border-style: none
           - padding-bottom: 6px
-          - width: 60%
+          - width: 70%
           - margin-left: 30%
-          - margin-top: '-20px'
         name:
           - font-weight: bold
-          - font-size: calc(110% - 3px)
+          - font-size: clamp(12px, 1vw, 15px)
         icon:
           - width: calc(70% - 8px)
           - color: |
-              [[[
-                 if (states['automation.power_control'].state == 'on') return "white   ";
-                 else return "#252525";
-               ]]]
+              [[[ 
+                 if (states['automation.power_control'].state == 'on') return "white   "; 
+                 else return "#252525"; 
+               ]]] 
       tap_action:
         action: call-service
         service: automation.toggle
@@ -163,12 +159,12 @@ custom_fields:
             extremas: true
       card_mod:
         style: |
-          ha-card { 
-            border: 100px; 
-            background: none; 
-            width: 95%; 
-            padding-left: 10px 
-            } 
+          ha-card {  
+            border: 100px;  
+            background: none;  
+            width: 97%;  
+            padding-left: 10px  
+            }  
   lista:
     card:
       type: custom:button-card
@@ -178,15 +174,23 @@ custom_fields:
       show_name: false
       styles:
         card:
-          - background-color: var(--secondary-background-color)
+          - background-color: '#4B5975'
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
-          - width: 90px
-          - aspect-ratio: 1/0.6
+          - height: 50px
+          - width: 70px
         icon:
+          - width: 30px
+          - height: 30px
           - color: white
-          - align-self: center
+          - align-self: start
+          - text-align: start
+          - padding: 8px
+        img_cell:
+          - justify-content: middle
+          - align-self: middle
+          - margin: none
       tap_action:
         action: fire-dom-event
         browser_mod:
@@ -194,27 +198,30 @@ custom_fields:
           data:
             card_mod:
               style: |
-                ha-dialog {
-                  --mdc-dialog-min-width: 400px !important;
-                  }
-                :host {
-                  --ha-card-background: rgba(50,65,85,1);
-                  --mdc-dialog-scrim-color: rgba(15,15,15,0.9);
-                  }
+                ha-dialog { 
+                  --mdc-dialog-min-width: 400px !important; 
+                  } 
+                :host { 
+                  --ha-card-background: rgba(50,65,85,1); 
+                  --mdc-dialog-scrim-color: rgba(15,15,15,0.9); 
+                  } 
             content:
-              type: vertical-stack
-              cards:
-                - type: markdown
-                  content: |-
-                    **Lista carichi**
-                    {% from 'power_control.jinja' import entities_control %}
-                      {% for entities in entities_control().split() %}
-                        {{ states[entities].name -}}
-                      {% endfor %}
-                    **Esclusi dal ripristino**
-                      {% for t in state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %}
-                        {{ states[t].name -}}
-                      {% endfor %}
+              type: markdown
+              style: |
+                ha-card {  
+                  background: none;  
+                  border: 100px;  
+                  }  
+              content: |-
+                **Lista carichi** 
+                {% from 'power_control.jinja' import entities_control %} 
+                  {% for entities in entities_control().split() %} 
+                    {{ states[entities].name -}} 
+                  {% endfor %} 
+                **Esclusi dal ripristino** 
+                  {% for t in state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %} 
+                    {{ states[t].name -}} 
+                  {% endfor %} 
   setting:
     card:
       type: custom:button-card
@@ -224,12 +231,12 @@ custom_fields:
       icon: mdi:cog
       styles:
         card:
-          - background-color: var(--secondary-background-color)
+          - background-color: '#4B5975'
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
-          - width: 90px
-          - aspect-ratio: 1/0.6
+          - width: 70px
+          - aspect-ratio: 1/0.7
         icon:
           - color: white
           - align-self: center
@@ -240,87 +247,123 @@ custom_fields:
           data:
             card_mod:
               style: |
-                :host { 
-                  --ha-card-background: rgba(50,65,85,1); 
-                  --mdc-dialog-scrim-color: rgba(15,15,15,0.9); 
-                  } 
+                :host {  
+                  --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
+                  }  
             content:
-              type: vertical-stack
-              cards:
-                - type: horizontal-stack
-                  cards:
-                    - type: vertical-stack
-                      title: Tempi
-                      cards:
-                        - type: custom:mushroom-number-card
-                          entity: input_number.ritardo_distacco_carico
-                          layout: vertical
-                          icon_color: green
-                          tap_action:
-                            action: none
-                          hold_action:
-                            action: none
-                          double_tap_action:
-                            action: none
-                          card_mod:
-                            style: |
-                              :host { 
-                                --ha-card-background: rgba(50,65,85,1); 
-                                --mdc-dialog-scrim-color: rgba(15,15,15,0.9); 
-                                } 
-                        - type: custom:mushroom-number-card
-                          entity: input_number.ritardo_ripristino_carico
-                          layout: vertical
-                          icon_color: red
-                          tap_action:
-                            action: none
-                          hold_action:
-                            action: none
-                          double_tap_action:
-                            action: none
-                          card_mod:
-                            style: |
-                              :host { 
-                                --ha-card-background: rgba(50,65,85,1); 
-                                --mdc-dialog-scrim-color: rgba(15,15,15,0.9); 
-                                }
-                    - type: vertical-stack
-                      title: Soglie
-                      cards:
-                        - type: custom:mushroom-number-card
-                          entity: input_number.distacco_carico
-                          layout: vertical
-                          card_mod:
-                            style: |
-                              :host { 
-                                --ha-card-background: rgba(50,65,85,1); 
-                                --mdc-dialog-scrim-color: rgba(15,15,15,0.9); 
-                                }
-                        - type: custom:mushroom-number-card
-                          entity: input_number.distacco_urgente
-                          layout: vertical
-                          tap_action:
-                            action: none
-                          hold_action:
-                            action: none
-                          double_tap_action:
-                            action: none
-                          card_mod:
-                            style: |
-                              :host { 
-                                --ha-card-background: rgba(50,65,85,1); 
-                                --mdc-dialog-scrim-color: rgba(15,15,15,0.9); 
-                                } 
-                - type: custom:mushroom-select-card
-                  entity: select.escludi_dispositivi_dal_ripristino_carico
-                  fill_container: true
-                  icon_type: none
-                  secondary_info: none
-                  style: |
-                    ha-card { 
-                      border: 100px; 
-                      background: none; 
-                      } 
+              type: custom:button-card
+              styles:
+                card:
+                  - background-color: transparent
+                  - border-radius: 20px
+                grid:
+                  - grid-template-areas: |-
+                      " tempi     soglie        " 
+                      " rit_dist  dis_carichi   "   
+                      " rit_ripr  dis_emergenza "   
+                      " excl      excl          "
+                  - grid-template-columns: repeat(2, 1fr)
+                  - grid-column-gap: 0.3em
+                  - grid-row-gap: 0.3em
+              custom_fields:
+                tempi:
+                  card:
+                    style: |
+                      ha-card {  
+                        background: none;  
+                        border: 100px;  
+                        }  
+                    type: custom:button-card
+                    name: Tempi
+                    tap_action:
+                      action: none
+                rit_dist:
+                  card:
+                    type: custom:mushroom-number-card
+                    entity: input_number.ritardo_distacco_carico
+                    layout: vertical
+                    icon_color: green
+                    tap_action:
+                      action: none
+                    hold_action:
+                      action: none
+                    double_tap_action:
+                      action: none
+                    card_mod:
+                      style: |
+                        :host {  
+                          --ha-card-background: rgba(50,65,85,1);  
+                          --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
+                          }  
+                rit_ripr:
+                  card:
+                    type: custom:mushroom-number-card
+                    entity: input_number.ritardo_ripristino_carico
+                    layout: vertical
+                    icon_color: red
+                    tap_action:
+                      action: none
+                    hold_action:
+                      action: none
+                    double_tap_action:
+                      action: none
+                    card_mod:
+                      style: |
+                        :host {  
+                          --ha-card-background: rgba(50,65,85,1);  
+                          --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
+                          } 
+                soglie:
+                  card:
+                    style: |
+                      ha-card {  
+                        background: none;  
+                        border: 100px;  
+                        }  
+                    type: custom:button-card
+                    name: Tempi
+                    tap_action:
+                      action: none
+                dis_carichi:
+                  card:
+                    type: custom:mushroom-number-card
+                    entity: input_number.distacco_carico
+                    layout: vertical
+                    card_mod:
+                      style: |
+                        :host {  
+                          --ha-card-background: rgba(50,65,85,1);  
+                          --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
+                          } 
+                dis_emergenza:
+                  card:
+                    type: custom:mushroom-number-card
+                    entity: input_number.distacco_urgente
+                    layout: vertical
+                    tap_action:
+                      action: none
+                    hold_action:
+                      action: none
+                    double_tap_action:
+                      action: none
+                    card_mod:
+                      style: |
+                        :host {  
+                          --ha-card-background: rgba(50,65,85,1);  
+                          --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
+                          }  
+                excl:
+                  card:
+                    type: custom:mushroom-select-card
+                    entity: select.escludi_dispositivi_dal_ripristino_carico
+                    fill_container: true
+                    icon_type: none
+                    secondary_info: none
+                    style: |
+                      ha-card {  
+                        border: 100px;  
+                        background: none;  
+                        }  
   push:
     card:
       type: custom:button-card
@@ -328,25 +371,25 @@ custom_fields:
       show_name: false
       name: Power
       icon: |
-        [[[ 
-         if (states['automation.notify_control_power_push'].state == 'on') return "mdi:cellphone-check"; 
-         else return "mdi:cellphone-off"; 
-        ]]] 
+        [[[  
+         if (states['automation.notify_control_power_push'].state == 'on') return "mdi:cellphone-check";  
+         else return "mdi:cellphone-off";  
+        ]]]  
       styles:
         card:
-          - background-color: var(--secondary-background-color)
+          - background-color: '#4B5975'
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
-          - width: 90px
-          - aspect-ratio: 1/0.6
+          - width: 70px
+          - aspect-ratio: 1/0.7
         icon:
           - align-self: center
           - color: |
-              [[[ 
-                 if (states['automation.notify_control_power_push'].state == 'on') return "white   "; 
-                 else return "#252530"; 
-               ]]]
+              [[[  
+                 if (states['automation.notify_control_power_push'].state == 'on') return "white   ";  
+                 else return "#252530";  
+               ]]] 
       tap_action:
         action: call-service
         service: automation.toggle
@@ -359,25 +402,25 @@ custom_fields:
       show_name: false
       name: Power
       icon: |
-        [[[ 
-         if (states['automation.notify_control_power_media_player'].state == 'on') return "mdi:account-voice"; 
-         else return "mdi:speaker-off"; 
-        ]]] 
+        [[[  
+         if (states['automation.notify_control_power_media_player'].state == 'on') return "mdi:account-voice";  
+         else return "mdi:speaker-off";  
+        ]]]  
       styles:
         card:
-          - background-color: var(--secondary-background-color)
+          - background-color: '#4B5975'
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
-          - width: 90px
-          - aspect-ratio: 1/0.6
+          - width: 70px
+          - aspect-ratio: 1/0.7
         icon:
           - align-self: center
           - color: |
-              [[[ 
-                 if (states['automation.notify_control_power_media_player'].state == 'on') return "white   "; 
-                 else return "#252530"; 
-               ]]] 
+              [[[  
+                 if (states['automation.notify_control_power_media_player'].state == 'on') return "white   ";  
+                 else return "#252530";  
+               ]]]  
       tap_action:
         action: call-service
         service: automation.toggle

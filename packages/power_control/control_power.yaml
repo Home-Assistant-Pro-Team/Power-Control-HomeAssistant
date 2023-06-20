@@ -110,6 +110,26 @@ template:
                   {% endfor %}
                 {% endif %}
 
+  - trigger:
+    - platform: state
+      entity_id: input_boolean.check_distacco
+      to: 'off'
+      for: 
+        minutes: 1
+    - platform: event
+      event_type: customizations
+      event_data:
+        types: notify_power_control
+    sensor:
+      - name: marquee power control
+        state: >-
+          {% if trigger.entity_id == 'input_boolean.check_distacco' %}
+            {{ 'Ultimo intervento il ' + as_local(states['input_boolean.check_distacco'].last_changed).strftime('%d/%m/%Y %H:%M') }}
+          {% else %}
+            {{ trigger.event.data.message|default('Messaggio non impostato') }}
+          {% endif %}
+
+
 input_text:
   list_power_control:
     initial: 'none'
@@ -295,39 +315,43 @@ automation:
     if:
       - alias: Controllo se è scattato il distacco carichi
         condition: template
-        value_template: "{{ trigger.id == 'ripristino_carico' and is_state('input_boolean.check_distacco', 'on') }}"
-    then: 
-      - alias: Ripristino carico
-        repeat:
-          for_each: >-
-            {% set output = namespace(state_home=[]) %}
-            {% for device in states if device.entity_id in state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %}
-              {% set output.state_home = output.state_home +  [device.entity_id] %}
-            {% endfor %}
-              {{ states('input_text.list_power_control').split()|reject('in', output.state_home)|list }}
-          sequence:
-            - alias: Cancella timer per evitare altro trigger
-              service: timer.cancel
-              target:
-                entity_id: timer.distacco_carico
-            - alias: INVIA NOTIFICA
-              event: customizations
-              event_data:
-                types: notify_power_control
-                message: "{{ 'Il consumo è tornato nei limiti. ' + states[repeat.item].name + ' è stato acceso.' }}"
-            - alias: Ripristina ultimo carico spento e non escluso
-              service: homeassistant.turn_on
-              target:
-                entity_id:  "{{ repeat.item }}"
-            - alias: Attendi per ripristinare elettrodomestici
-              delay:
-                seconds: "{{ states('input_number.ritardo_ripristino_carico')|int(0) }}"
-      - alias: INVIA NOTIFICA
-        event: customizations
-        event_data:
-          types: notify_power_control
-          message: I consumi sono tornati regolari e tutti gli elettrodomestici sono stati ripristinati
-      - alias: Imposta il boolean in off per indicare che il ripristiono
-        service: input_boolean.turn_off
+        value_template: "{{ trigger.id == 'ripristino_carico' }}"
+    then:
+      - service: timer.cancel
         target:
-          entity_id: input_boolean.check_distacco
+          entity_id: timer.distacco_carico
+      - if:
+          - alias: Controllo se è scattato il distacco carichi
+            condition: template
+            value_template: "{{ is_state('input_boolean.check_distacco', 'on') }}"
+        then: 
+          - alias: Ripristino carico
+            repeat:
+              for_each: >-
+                {% set output = namespace(state_home=[]) %}
+                {% for device in states if device.entity_id in state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %}
+                  {% set output.state_home = output.state_home +  [device.entity_id] %}
+                {% endfor %}
+                  {{ states('input_text.list_power_control').split()|reject('in', output.state_home)|list }}
+              sequence:
+                - alias: INVIA NOTIFICA
+                  event: customizations
+                  event_data:
+                    types: notify_power_control
+                    message: "{{ 'Il consumo è tornato nei limiti. ' + states[repeat.item].name + ' è stato acceso.' }}"
+                - alias: Ripristina ultimo carico spento e non escluso
+                  service: homeassistant.turn_on
+                  target:
+                    entity_id:  "{{ repeat.item }}"
+                - alias: Attendi per ripristinare elettrodomestici
+                  delay:
+                    seconds: "{{ states('input_number.ritardo_ripristino_carico')|int(0) }}"
+          - alias: INVIA NOTIFICA
+            event: customizations
+            event_data:
+              types: notify_power_control
+              message: I consumi sono tornati regolari e tutti gli elettrodomestici sono stati ripristinati
+          - alias: Imposta il boolean in off per indicare che il ripristiono
+            service: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.check_distacco
