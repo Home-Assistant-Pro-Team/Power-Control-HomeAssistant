@@ -7,15 +7,40 @@ styles:
     - border-radius: 20px
   grid:
     - grid-template-areas: |-
-        " logo logo watt watt watt  "
-        " logo logo t1 t1 . "
+        " logo logo watt watt orologio  "
+        " logo logo stato stato . "
         " graph graph graph graph graph "  
         " . lista setting  push media  "  
     - grid-template-columns: 1.4vw repeat(4, 1fr)
     - grid-template-rows: min-content min-content min-content
     - grid-column-gap: 0.1em
 custom_fields:
-  t1:
+  orologio:
+    card:
+      type: custom:button-card
+      name: |
+        [[[
+          var date = new Date();
+          var hours = date.getHours();
+          var minutes = date.getMinutes();
+          var seconds = date.getSeconds();
+          return hours.toString().padStart(2, '0') + ':' + minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
+        ]]]
+      styles:
+        card:
+          - width: 95px
+          - height: 95px
+          - border-style: none
+          - background: none
+          - margin: 0px
+          - font-size: calc(140% - 4px)
+          - text-align: center
+          - margin-top: '-30px'
+          - justify-content: start
+          - align-items: center
+        name:
+          - margin-top: 5px
+  stato:
     card:
       type: custom:button-card
       entity: timer.fine_richiesta_disattivazione_allarme_batteria_scarica
@@ -44,14 +69,14 @@ custom_fields:
                 }
               ]]]
           - border-style: none
-          - width: calc(140% - 5px)
+          - width: calc(140% - 3px)
           - height: 30px
           - margin-top: '-45px'
           - margin-left: 6px
           - justify-self: left
         name:
           - margin-left: '-4px'
-          - margin-top: '-4px'
+          - margin-top: '-5px'
   watt:
     card:
       type: custom:button-card
@@ -64,16 +89,17 @@ custom_fields:
       styles:
         label:
           - font-color: var(--secondary-text-color)
-          - font-size: clamp(2vm, 3vm, 3.5vm)
+          - font-size: calc(105% - 3px)
           - justify-self: left
-          - padding-left: 28px
+          - padding-left: 35px
           - margin-top: '-50px'
         card:
           - background-color: transparent
           - border-style: none
+          - padding-top: 25px
         name:
           - font-weight: bold
-          - font-size: clamp(20px, 30px, 35px)
+          - font-size: calc(195% - 3px)
           - letter-spacing: '-2.0px'
           - justify-self: left
           - padding-left: 25px
@@ -109,7 +135,7 @@ custom_fields:
           - margin-top: '-20px'
         name:
           - font-weight: bold
-          - font-size: clamp(12px, 1vw, 15px)
+          - font-size: calc(110% - 3px)
         icon:
           - width: calc(70% - 8px)
           - color: |
@@ -152,23 +178,15 @@ custom_fields:
       show_name: false
       styles:
         card:
-          - background-color: '#4B5975'
+          - background-color: var(--secondary-background-color)
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
-          - height: 50px
-          - width: 70px
+          - width: 90px
+          - aspect-ratio: 1/0.6
         icon:
-          - width: 30px
-          - height: 30px
           - color: white
-          - align-self: start
-          - text-align: start
-          - padding: 8px
-        img_cell:
-          - justify-content: middle
-          - align-self: middle
-          - margin: none
+          - align-self: center
       tap_action:
         action: fire-dom-event
         browser_mod:
@@ -206,12 +224,12 @@ custom_fields:
       icon: mdi:cog
       styles:
         card:
-          - background-color: '#4B5975'
+          - background-color: var(--secondary-background-color)
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
-          - width: 70px
-          - aspect-ratio: 1/0.7
+          - width: 90px
+          - aspect-ratio: 1/0.6
         icon:
           - color: white
           - align-self: center
@@ -316,12 +334,12 @@ custom_fields:
         ]]] 
       styles:
         card:
-          - background-color: '#4B5975'
+          - background-color: var(--secondary-background-color)
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
-          - width: 70px
-          - aspect-ratio: 1/0.7
+          - width: 90px
+          - aspect-ratio: 1/0.6
         icon:
           - align-self: center
           - color: |
@@ -347,12 +365,12 @@ custom_fields:
         ]]] 
       styles:
         card:
-          - background-color: '#4B5975'
+          - background-color: var(--secondary-background-color)
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
-          - width: 70px
-          - aspect-ratio: 1/0.7
+          - width: 90px
+          - aspect-ratio: 1/0.6
         icon:
           - align-self: center
           - color: |
