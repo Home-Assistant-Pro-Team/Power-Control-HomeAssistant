@@ -26,7 +26,7 @@ Una volta che il consumo energetico scende sotto la soglia di distacco per il te
 NB: Le notifiche push verranno inviate solo alle persone che si trovano in casa.
 
 
-### **Requisiti**
+### **Requisiti packages**
 - [HomeAssitant release 2023.4 ](https://www.home-assistant.io/blog/2023/04/05/release-20234/)
 - [Cartella Package abilitata](https://www.home-assistant.io/docs/configuration/packages/)
 - Dispositivo per controllo consumo generale casa es shelly em. 
@@ -119,10 +119,21 @@ A questo punto, puoi caricare la cartella power_control nella directory "package
 
 ### **Card:**
 
+#### **Requisiti card:**
+
+- Sensore power (W) incluso nel [recorder](https://www.home-assistant.io/integrations/recorder/)
+- [Browser mode](https://github.com/thomasloven/hass-browser_mod) 
+- [Button card](https://github.com/custom-cards/button-card)
+- [Card Mod](https://github.com/thomasloven/lovelace-card-mod)
+- [Apexcharts card](https://github.com/RomRider/apexcharts-card)
+
+
+#### **Installazione card:**
 Per utilizzare la card, è necessario seguire alcuni semplici passaggi. Iniziamo creando una nuova scheda manuale e copiamo il contenuto del file "card.txt" ed inseriamo il sensore power utilizzato in precedenza nella variabile power_meter.
 
 ![variables](example/variables.png)
 
+#### **Spiegazione card:**
 E' possibile attivare o disattivare il controllo carichi premendo il pulsante.
 
 ![power_on](example/power_on.png)	![power_off](example/power_off.png)
