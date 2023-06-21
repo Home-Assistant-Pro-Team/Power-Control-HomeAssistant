@@ -1,16 +1,16 @@
 type: custom:button-card
 variables:
-  power_meter: sensor.shelly_em_assorbimento_casa
+  power_meter: sensor.shellyem_b168e7_channel_1_power
 styles:
   card:
-    - background-color: '#333'
+    - background-color: var(--card-background-color)
     - border-radius: 20px
   grid:
     - grid-template-areas: |-
-        " logo logo watt watt watt . " 
-        " . marquee marquee marquee marquee . " 
-        " graph graph graph graph graph graph "   
-        " . lista setting  push media . "   
+        " logo logo watt watt watt . "
+        " . marquee marquee marquee marquee . "
+        " graph graph graph graph graph graph "
+        " . lista setting  push media . "
     - grid-template-columns: 1.4vw repeat(4, 1fr) 1.3vw
     - grid-template-rows: min-content 1vw min-content min-content
     - grid-column-gap: 0.1em
@@ -63,7 +63,7 @@ custom_fields:
           - height: 120px
         name:
           - font-weight: bold
-          - font-size: clamp(16px, 27px, 35px)
+          - font-size: clamp(16px, 30px, 35px)
           - letter-spacing: '-2.0px'
           - justify-self: left
           - padding-left: 25px
@@ -94,7 +94,7 @@ custom_fields:
                       if (states['timer.distacco_carico'].state !== 'idle') { 
                         return 'red'; 
                       } else { 
-                        return 'var(--secondary-background-color)'; 
+                        return 'var(--disabled-text-color)';
                       } 
                     ]]] 
                 - border-style: none
@@ -136,6 +136,7 @@ custom_fields:
         name:
           - font-weight: bold
           - font-size: clamp(12px, 1vw, 15px)
+          - color: var(--primay-text-color)
         icon:
           - width: calc(70% - 8px)
           - color: |
@@ -178,7 +179,7 @@ custom_fields:
       show_name: false
       styles:
         card:
-          - background-color: '#4B5975'
+          - background-color: var(--primary-color)
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
@@ -191,10 +192,6 @@ custom_fields:
           - align-self: start
           - text-align: start
           - padding: 8px
-        img_cell:
-          - justify-content: middle
-          - align-self: middle
-          - margin: none
       tap_action:
         action: fire-dom-event
         browser_mod:
@@ -203,7 +200,7 @@ custom_fields:
             card_mod:
               style: |
                 :host { 
-                  --ha-card-background: rgba(50,65,85,1); 
+                  --ha-card-background: var(--app-header-background-color); 
                   --mdc-dialog-scrim-color: rgba(15,15,15,0.9); 
                   } 
             content:
@@ -213,16 +210,32 @@ custom_fields:
                   background: none;  
                   border: 100px;  
                   }  
-              content: |-
+              content: >-
                 **Lista carichi** 
+
                 {% from 'power_control.jinja' import entities_control %} 
                   {% for entities in entities_control().split() %} 
                     {{ states[entities].name -}} 
                   {% endfor %} 
                 **Esclusi dal ripristino** 
-                  {% for t in state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %} 
+
+                {% if
+                state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
+                'list_exclude') is not none and
+                state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
+                'list_exclude')|count != 0 %}
+
+                {% for t in
+                state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
+                'list_exclude') %} 
                     {{ states[t].name -}} 
-                  {% endfor %} 
+                {% endfor %} 
+
+                {% else %}
+                    Nessuno
+                {% endif %}
+
+                  
   setting:
     card:
       type: custom:button-card
@@ -232,7 +245,7 @@ custom_fields:
       icon: mdi:cog
       styles:
         card:
-          - background-color: '#4B5975'
+          - background-color: var(--primary-color)
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
@@ -293,7 +306,7 @@ custom_fields:
                     card_mod:
                       style: |
                         :host {  
-                          --ha-card-background: rgba(50,65,85,1);  
+                          --ha-card-background: var(--card-background-color);  
                           --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
                           }  
                 rit_ripr:
@@ -311,7 +324,7 @@ custom_fields:
                     card_mod:
                       style: |
                         :host {  
-                          --ha-card-background: rgba(50,65,85,1);  
+                          --ha-card-background: var(--card-background-color);  
                           --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
                           } 
                 soglie:
@@ -333,7 +346,7 @@ custom_fields:
                     card_mod:
                       style: |
                         :host {  
-                          --ha-card-background: rgba(50,65,85,1);  
+                          --ha-card-background: var(--card-background-color);  
                           --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
                           } 
                 dis_emergenza:
@@ -350,7 +363,7 @@ custom_fields:
                     card_mod:
                       style: |
                         :host {  
-                          --ha-card-background: rgba(50,65,85,1);  
+                          --ha-card-background: var(--card-background-color);  
                           --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
                           }  
                 excl:
@@ -378,7 +391,11 @@ custom_fields:
         ]]]  
       styles:
         card:
-          - background-color: '#4B5975'
+          - background-color: |
+              [[[  
+                 if (states['automation.notify_control_power_push'].state == 'on') return "var(--primary-color)";  
+                 else return "var(--disabled-color)"; 
+               ]]]  
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
@@ -389,8 +406,8 @@ custom_fields:
           - color: |
               [[[  
                  if (states['automation.notify_control_power_push'].state == 'on') return "white   ";  
-                 else return "#252530";  
-               ]]] 
+                 else return "dimGray"; 
+               ]]]  
       tap_action:
         action: call-service
         service: automation.toggle
@@ -409,7 +426,11 @@ custom_fields:
         ]]]  
       styles:
         card:
-          - background-color: '#4B5975'
+          - background-color: |
+              [[[  
+                 if (states['automation.notify_control_power_media_player'].state == 'on') return "var(--primary-color)";  
+                 else return "var(--disabled-color)"; 
+               ]]]  
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
@@ -420,7 +441,7 @@ custom_fields:
           - color: |
               [[[  
                  if (states['automation.notify_control_power_media_player'].state == 'on') return "white   ";  
-                 else return "#252530";  
+                 else return "dimGray"; 
                ]]]  
       tap_action:
         action: call-service
