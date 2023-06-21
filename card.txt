@@ -1,6 +1,6 @@
 type: custom:button-card
 variables:
-  power_meter: sensor.shellyem_b168e7_channel_1_power
+  power_meter: sensor.shelly_em_assorbimento_casa
 styles:
   card:
     - background-color: var(--card-background-color)
@@ -391,7 +391,11 @@ custom_fields:
         ]]]  
       styles:
         card:
-          - background-color: var(--primary-color)
+          - background-color: |
+              [[[  
+                 if (states['automation.notify_control_power_push'].state == 'on') return "var(--primary-color)";  
+                 else return "var(--paper-item-icon-color)"; 
+               ]]]  
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
@@ -422,7 +426,11 @@ custom_fields:
         ]]]  
       styles:
         card:
-          - background-color: var(--primary-color)
+          - background-color: |
+              [[[  
+                 if (states['automation.notify_control_power_media_player'].state == 'on') return "var(--primary-color)";  
+                 else return "var(--paper-item-icon-color)"; 
+               ]]]  
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
