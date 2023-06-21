@@ -1,6 +1,6 @@
 type: custom:button-card
 variables:
-  power_meter: sensor.shelly_em_assorbimento_casa
+  power_meter: sensor.shellyem_b168e7_channel_1_power
 styles:
   card:
     - background-color: var(--card-background-color)
@@ -37,7 +37,7 @@ custom_fields:
     card:
       type: custom:button-card
       variables:
-        power_meter: '[[[return variables.power_meter ]]]'
+        power_meter: sensor.shelly_em_assorbimento_casa
       label: |
         [[[ 
             return 'Instantaneo '+ states[variables.power_meter].state + 'W'; 
@@ -179,7 +179,7 @@ custom_fields:
       show_name: false
       styles:
         card:
-          - background-color: var(--paper-item-icon-color)
+          - background-color: var(--primary-color)
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
@@ -245,7 +245,7 @@ custom_fields:
       icon: mdi:cog
       styles:
         card:
-          - background-color: var(--paper-item-icon-color)
+          - background-color: var(--primary-color)
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
@@ -391,7 +391,7 @@ custom_fields:
         ]]]  
       styles:
         card:
-          - background-color: var(--paper-item-icon-color)
+          - background-color: var(--primary-color)
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
@@ -422,7 +422,7 @@ custom_fields:
         ]]]  
       styles:
         card:
-          - background-color: var(--paper-item-icon-color)
+          - background-color: var(--primary-color)
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
