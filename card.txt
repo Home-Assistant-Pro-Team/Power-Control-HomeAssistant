@@ -202,7 +202,7 @@ custom_fields:
                 :host { 
                   --ha-card-background: var(--app-header-background-color); 
                   --mdc-dialog-scrim-color: rgba(15,15,15,0.9); 
-                  } 
+                } 
             content:
               type: vertical-stack
               cards:
@@ -210,7 +210,6 @@ custom_fields:
                   style: |
                     ha-card {  
                       background: var(--ha-card-background);
-                      border: 100px;  
                       }  
                   content: >-
                     **Lista carichi** 
@@ -236,6 +235,17 @@ custom_fields:
                     {% else %}
                         Nessuno
                     {% endif %}
+                  card_mod:
+                    style: |
+                      :host { 
+                        --ha-card-background: var(--app-header-background-color); 
+                      }
+                      ha-card {
+                        background: var(--ha-card-background);
+                        margin-right: 10px;
+                        margin-left: 10px;
+                        border: none;
+                      }
                 - type: custom:mushroom-select-card
                   entity: select.escludi_dispositivi_dal_ripristino_carico
                   fill_container: true
@@ -244,7 +254,13 @@ custom_fields:
                   style: |
                     :host { 
                       --ha-card-background: var(--app-header-background-color); 
-                      } 
+                    }
+                    ha-card {
+                      background: var(--ha-card-background);
+                      margin-right: 10px;
+                      margin-left: 20px;
+                      border: none;
+                    }
   setting:
     card:
       type: custom:button-card
@@ -271,7 +287,7 @@ custom_fields:
             card_mod:
               style: |
                 :host {  
-                  --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
+                  --mdc-dialog-scrim-color: rgba(15,15,15,0.9);
                   }  
             content:
               type: custom:button-card
@@ -293,7 +309,7 @@ custom_fields:
                     style: |
                       ha-card {  
                         background: none;  
-                        border: 100px;  
+                        border: 0px;
                         }  
                     type: custom:button-card
                     name: Tempi
@@ -316,7 +332,10 @@ custom_fields:
                         :host {  
                           --ha-card-background: var(--card-background-color);  
                           --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
-                          }  
+                          }
+                        ha-card {
+                          margin-left: 20px;
+                        }
                 rit_ripr:
                   card:
                     type: custom:mushroom-number-card
@@ -334,7 +353,10 @@ custom_fields:
                         :host {  
                           --ha-card-background: var(--card-background-color);  
                           --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
-                          } 
+                        }
+                        ha-card {
+                          margin-left: 20px;
+                        }
                 soglie:
                   card:
                     style: |
@@ -355,8 +377,11 @@ custom_fields:
                       style: |
                         :host {  
                           --ha-card-background: var(--card-background-color);  
-                          --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
-                          } 
+                          --mdc-dialog-scrim-color: rgba(15,15,15,0.9);
+                        } 
+                        ha-card {
+                          margin-right: 20px;
+                        }
                 dis_emergenza:
                   card:
                     type: custom:mushroom-number-card
@@ -373,7 +398,10 @@ custom_fields:
                         :host {  
                           --ha-card-background: var(--card-background-color);  
                           --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
-                          }  
+                        }
+                        ha-card {
+                          margin-right: 20px;
+                        }
   push:
     card:
       type: custom:button-card
