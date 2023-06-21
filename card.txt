@@ -1,16 +1,16 @@
 type: custom:button-card
 variables:
-  power_meter: sensor.shellyem_b168e7_channel_1_power
+  power_meter: sensor.shelly_em_assorbimento_casa
 styles:
   card:
     - background-color: var(--card-background-color)
     - border-radius: 20px
   grid:
     - grid-template-areas: |-
-        " logo logo watt watt watt . " 
-        " . marquee marquee marquee marquee . " 
-        " graph graph graph graph graph graph "   
-        " . lista setting  push media . "   
+        " logo logo watt watt watt . "
+        " . marquee marquee marquee marquee . "
+        " graph graph graph graph graph graph "
+        " . lista setting  push media . "
     - grid-template-columns: 1.4vw repeat(4, 1fr) 1.3vw
     - grid-template-rows: min-content 1vw min-content min-content
     - grid-column-gap: 0.1em
@@ -210,16 +210,32 @@ custom_fields:
                   background: none;  
                   border: 100px;  
                   }  
-              content: |-
+              content: >-
                 **Lista carichi** 
+
                 {% from 'power_control.jinja' import entities_control %} 
                   {% for entities in entities_control().split() %} 
                     {{ states[entities].name -}} 
                   {% endfor %} 
                 **Esclusi dal ripristino** 
-                  {% for t in state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %} 
+
+                {% if
+                state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
+                'list_exclude') is not none and
+                state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
+                'list_exclude')|count != 0 %}
+
+                {% for t in
+                state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
+                'list_exclude') %} 
                     {{ states[t].name -}} 
-                  {% endfor %} 
+                {% endfor %} 
+
+                {% else %}
+                    Nessuno
+                {% endif %}
+
+                  
   setting:
     card:
       type: custom:button-card
