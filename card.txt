@@ -204,52 +204,38 @@ custom_fields:
                   --mdc-dialog-scrim-color: rgba(15,15,15,0.9); 
                   } 
             content:
-              type: vertical-stack
-              cards:
-                - type: markdown
-                  style: |
-                    ha-card {  
-                      background: var(--ha-card-background);
-                      border: 100px;  
-                      }  
-                  content: >-
-                    **Lista carichi** 
+              type: markdown
+              style: |
+                ha-card {  
+                  background: none;  
+                  border: 100px;  
+                  }  
+              content: >-
+                **Lista carichi** 
 
-                    {% from 'power_control.jinja' import entities_control %} 
-                      {% for entities in entities_control().split() %} 
-                        {{ states[entities].name -}} 
-                      {% endfor %} 
-                - type: custom:mushroom-select-card
-                  entity: select.escludi_dispositivi_dal_ripristino_carico
-                  fill_container: true
-                  icon_type: none
-                  secondary_info: none
-                  style: |
-                    ha-card {  
-                      background: none;  
-                      border: 100px;  
-                      }  
-                - type: markdown
-                  style: |
-                    ha-card {  
-                      background: var(--ha-card-background);
-                      border: 100px;  
-                      }  
-                  content: >-
-                    {% if
-                    state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
-                    'list_exclude') is not none and
-                    state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
-                    'list_exclude')|count != 0 %}
+                {% from 'power_control.jinja' import entities_control %} 
+                  {% for entities in entities_control().split() %} 
+                    {{ states[entities].name -}} 
+                  {% endfor %} 
+                **Esclusi dal ripristino** 
 
-                    {% for t in
-                    state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
-                    'list_exclude') %} 
-                        {{ states[t].name -}} 
-                    {% endfor %} 
-                    {% else %}
-                        Nessuno
-                    {% endif %}
+                {% if
+                state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
+                'list_exclude') is not none and
+                state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
+                'list_exclude')|count != 0 %}
+
+                {% for t in
+                state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
+                'list_exclude') %} 
+                    {{ states[t].name -}} 
+                {% endfor %} 
+
+                {% else %}
+                    Nessuno
+                {% endif %}
+
+                  
   setting:
     card:
       type: custom:button-card
@@ -289,6 +275,7 @@ custom_fields:
                       " . tempi     soglie        . " 
                       " . rit_dist  dis_carichi   . "   
                       " . rit_ripr  dis_emergenza . "   
+                      " . excl      excl          . "
                   - grid-template-columns: 0.1vw repeat(2, 1fr) 0.1vw
                   - grid-column-gap: 0.3em
                   - grid-row-gap: 0.3em
@@ -348,7 +335,7 @@ custom_fields:
                         border: 100px;  
                         }  
                     type: custom:button-card
-                    name: Valori
+                    name: Tempi
                     tap_action:
                       action: none
                 dis_carichi:
@@ -379,6 +366,18 @@ custom_fields:
                           --ha-card-background: var(--card-background-color);  
                           --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
                           }  
+                excl:
+                  card:
+                    type: custom:mushroom-select-card
+                    entity: select.escludi_dispositivi_dal_ripristino_carico
+                    fill_container: true
+                    icon_type: none
+                    secondary_info: none
+                    style: |
+                      ha-card {  
+                        border: 100px;  
+                        background: none;  
+                        }  
   push:
     card:
       type: custom:button-card
@@ -422,7 +421,7 @@ custom_fields:
       name: Power
       icon: |
         [[[  
-         if (states['automation.notify_control_power_media_player'].state == 'on') return "mdi:account-voice";  
+         if (states['automation.notify_control_power_media_player'].state == 'on') return "mdi:speaker-message";  
          else return "mdi:speaker-off";  
         ]]]  
       styles:
