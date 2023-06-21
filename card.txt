@@ -216,7 +216,7 @@ custom_fields:
                     **Lista carichi** 
                     {% from 'power_control.jinja' import entities_control %} 
                       {% for entities in entities_control().split() %} 
-                        {{ states[entities].name -}} 
+                        {{ states[entities].name + ': ' + states[entities].state -}} 
                       {% endfor %} 
                 - type: custom:mushroom-select-card
                   entity: select.escludi_dispositivi_dal_ripristino_carico
@@ -235,16 +235,11 @@ custom_fields:
                       border: 100px;  
                       }  
                   content: >-
-                    ``` {% if
-                    state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
-                    'list_exclude') is not none and
-                    state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
-                    'list_exclude')|count != 0 %}
-
-                    {% for t in
-                    state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
-                    'list_exclude') %}  {{ states[t].name -}}  {% endfor %}  {%
-                    else %}
+                    ``` 
+                    {% if state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') is not none and state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude')|count != 0 %}
+                    {% for t in state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %}  
+                      {{ states[t].name -}}  
+                    {% endfor %}  {% else %}
                         Nessuno
                     {% endif %}
   setting:
