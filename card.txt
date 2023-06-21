@@ -1,6 +1,6 @@
 type: custom:button-card
 variables:
-  power_meter: sensor.shelly_em_assorbimento_casa
+  power_meter: sensor.shellyem_b168e7_channel_1_power
 styles:
   card:
     - background-color: var(--card-background-color)
@@ -394,7 +394,7 @@ custom_fields:
           - background-color: |
               [[[  
                  if (states['automation.notify_control_power_push'].state == 'on') return "var(--primary-color)";  
-                 else return "var(--paper-item-icon-color)"; 
+                 else return "var(--disabled-color)"; 
                ]]]  
           - border-radius: 18px
           - border-style: none
@@ -406,8 +406,8 @@ custom_fields:
           - color: |
               [[[  
                  if (states['automation.notify_control_power_push'].state == 'on') return "white   ";  
-                 else return "#252530";  
-               ]]] 
+                 else return "dimGray"; 
+               ]]]  
       tap_action:
         action: call-service
         service: automation.toggle
@@ -429,7 +429,7 @@ custom_fields:
           - background-color: |
               [[[  
                  if (states['automation.notify_control_power_media_player'].state == 'on') return "var(--primary-color)";  
-                 else return "var(--paper-item-icon-color)"; 
+                 else return "var(--disabled-color)"; 
                ]]]  
           - border-radius: 18px
           - border-style: none
@@ -441,7 +441,7 @@ custom_fields:
           - color: |
               [[[  
                  if (states['automation.notify_control_power_media_player'].state == 'on') return "white   ";  
-                 else return "#252530"; 
+                 else return "dimGray"; 
                ]]]  
       tap_action:
         action: call-service
