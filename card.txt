@@ -1,6 +1,6 @@
 type: custom:button-card
 variables:
-  power_meter: sensor.shellyem_b168e7_channel_1_power
+  power_meter: sensor.shelly_em_assorbimento_casa
 styles:
   card:
     - background-color: var(--card-background-color)
@@ -206,33 +206,23 @@ custom_fields:
             content:
               type: vertical-stack
               cards:
-                - type: markdown
+                - type: custom:mushroom-select-card
                   style: |
                     ha-card {  
                       background: var(--ha-card-background);
-                      border: 100px;  
+                      border: 100px; 
+                      border-radius: 0px;
                       }  
-                  content: |-
-                    **Lista carichi** 
-                    {% from 'power_control.jinja' import entities_control %} 
-                      {% for entities in entities_control().split() %} 
-                        {{ states[entities].name + ': ' + states[entities].state -}} 
-                      {% endfor %} 
-                - type: custom:mushroom-select-card
                   entity: select.escludi_dispositivi_dal_ripristino_carico
                   fill_container: true
                   icon_type: none
                   secondary_info: none
-                  style: |
-                    ha-card {  
-                      background: none;  
-                      border: 100px;  
-                      }  
                 - type: markdown
                   style: |
                     ha-card {  
                       background: var(--ha-card-background);
-                      border: 100px;  
+                      border: 100px; 
+                      border-radius: 0px;
                       }  
                   content: >-
                     ```  {% if
@@ -246,6 +236,19 @@ custom_fields:
                     {% endfor %}  {% else %}
                         Nessuno
                     {% endif %}
+                - type: markdown
+                  style: |
+                    ha-card {  
+                      background: var(--ha-card-background);
+                      border: 100px; 
+                      border-radius: 0px;
+                      }  
+                  content: |-
+                    **Lista carichi** 
+                    {% from 'power_control.jinja' import entities_control %} 
+                      {% for entities in entities_control().split() %} 
+                        {{ states[entities].name + ': ' + states[entities].state -}} 
+                      {% endfor %} 
   setting:
     card:
       type: custom:button-card
