@@ -22,8 +22,6 @@ Una volta che il consumo energetico scende sotto la soglia di distacco per il te
 NB: Le notifiche push verranno inviate solo alle persone che si trovano in casa.
 
 
-
-
 ### **Requisiti**
 - [HomeAssitant release 2023.4 ](https://www.home-assistant.io/blog/2023/04/05/release-20234/)
 - [Cartella Package abilitata](https://www.home-assistant.io/docs/configuration/packages/)
@@ -115,19 +113,44 @@ Per l'installazione, è necessario caricare la cartella "custom_templates" nella
 
 A questo punto, puoi caricare la cartella power_control nella directory "packages" e riavviare Home Assistant.
 
-# Successivamente, sarà possibile caricare la card corrispondente.
+### **Card:**
 
-Ecco le impostazioni personalizzabili per il controllo del consumo ui:
+Per utilizzare la card, è necessario seguire alcuni semplici passaggi. Iniziamo creando una nuova scheda manuale e copiamo il contenuto del file "card.txt" ed inseriamo il sensore power utilizzato in precedenza nella variabile power_meter.
+
+![variables](example/variables.png)
+
+E' possibile attivare o disattivare il controllo carichi premendo il pulsante.
+
+![power_on](example/power_on.png)	![power_off](example/power_off.png)
 
 
-- Distacco carico: un valore espresso in watt (W), che rappresenta la soglia oltre la quale verrà eseguito il distacco degli elettrodomestici.
+La card presenta 4 pulsanti nella parte bassa, ognuno dei quali ha una specifica funzione. Qui di seguito l'ordine e la descrizione di ciascun pulsante:
 
-- Ritardo Distacco Carico:  un tempo di attesa espresso in minuti, dopo il quale verrà avviato il distacco dei carichi.
+![button](example/button.png)
 
-- Ritardo Ripristino Carico: un tempo di attesa espresso in secondi, dopo il quale verranno riaccensione gli elettrodomestici.
 
-- Distacco Urgente:  un valore più elevato rispetto al "Distacco carico", che consente di spegnere immediatamente l'ultimo elettrodomestico presente nella lista se è acceso entro 30 secondi. Altrimenti, verrà rispettato l'ordine della lista per il distacco degli altri carichi.
-- Escludi dispositivi dal ripristino carico: è possibile specificare uno o più dispositivi da escludere dal ripristino automatico dei carichi.
+1) Nel popup è possibile visualizzare sia i dispositivi inseriti nel controllo dei carichi che quelli impostati per non riaccendersi. Questo popup fornisce una panoramica completa dei dispositivi e delle loro impostazioni corrispondenti.
+
+
+![list](example/list.png)
+
+2) Questo popup viene utilizzato per configurare diverse impostazioni relative al sistema di gestione dei carichi. Ecco una spiegazione più dettagliata delle opzioni disponibili:
+
+	- Ritardo Distacco Carico:  Ritardo Distacco Carico: Questa opzione consente di specificare un tempo di attesa, espresso in minuti, dopo il quale verrà avviato il distacco dei carichi. Quando il tempo specificato trascorre, il sistema inizierà a disattivare i dispositivi collegati.
+
+	- Distacco carico: Questa impostazione richiede un valore, espresso in watt (W), che rappresenta la soglia oltre la quale il sistema eseguirà il distacco degli elettrodomestici. Se la potenza totale dei carichi supera questo valore, il sistema avvierà il distacco dei dispositivi.
+
+	- Ritardo Ripristino Carico: Questa opzione permette di impostare un tempo di attesa, espresso in secondi, dopo il quale i dispositivi verranno riaccesi automaticamente. Una volta trascorso il tempo specificato, il sistema avvierà la riaccensione dei dispositivi precedentemente disattivati.
+
+	- Distacco Urgente:  Questo valore deve essere più alto rispetto al "Distacco Carico" e consente di spegnere immediatamente l'ultimo elettrodomestico presente nella lista se è acceso entro 30 secondi. Se invece l'ultimo dispositivo non viene acceso entro tale intervallo di tempo, verrà rispettato l'ordine della lista per il distacco degli altri carichi.
+
+	- Escludi dispositivi dal ripristino carico: Questa opzione consente di specificare uno o più dispositivi da escludere dal ripristino automatico dei carichi. In altre parole, i dispositivi selezionati non verranno riaccensi automaticamente dopo un'interruzione per il distacco carichi.
+
+![setting](example/setting.png)
+
+3) Questa opzione consente di attivare le notifiche push che verranno inviate solo alle persone che si trovano in casa.
+
+4) Questa funzione permette di abilitare le notifiche per i media player alexa e TTS (es. Google)
 
 ### **Contributi**
 Questo progetto è aperto ai contributi. Se vuoi fornire feedback, segnalare un bug o richiedere una nuova funzionalità, ti invitiamo a creare una issue sul repository.
