@@ -1,6 +1,6 @@
 type: custom:button-card
 variables:
-  power_meter: sensor.shelly_em_assorbimento_casa
+  power_meter: sensor.shellyem_b168e7_channel_1_power
 styles:
   card:
     - background-color: var(--card-background-color)
@@ -67,7 +67,7 @@ custom_fields:
           - letter-spacing: '-2.0px'
           - justify-self: left
           - padding-left: 25px
-          - color: var(--secondary-text-color)
+          - color: var(--primary-text-color)
       custom_fields:
         timer:
           card:
@@ -235,9 +235,13 @@ custom_fields:
                       border: 100px;  
                       }  
                   content: >-
-                    ``` 
-                    {% if state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') is not none and state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude')|count != 0 %}
-                    {% for t in state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %}  
+                    ```  {% if
+                    state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
+                    'list_exclude') is not none and
+                    state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
+                    'list_exclude')|count != 0 %} {% for t in
+                    state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
+                    'list_exclude') %}  
                       {{ states[t].name -}}  
                     {% endfor %}  {% else %}
                         Nessuno
