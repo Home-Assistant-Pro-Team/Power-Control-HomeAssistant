@@ -2,10 +2,11 @@
 
 Il power control è un sistema che permette di gestire l'alimentazione elettrica in modo efficiente, prevenendo sovraccarichi e interruzioni di corrente. Il suo obiettivo principale è regolare il consumo di energia spegnendo i dispositivi in base alla potenza richiesta, evitando così il superamento dei limiti imposti e garantendo la stabilità del sistema elettrico. Inoltre, il sistema è in grado di riaccendere i dispositivi precedentemente spenti quando il consumo torna nella norma.
 
-<video  controls>
-  <source src="example/power.mp4" type="video/mp4">
-  Il browser non supporta la riprodizione del [video](example/power.mp4).
-</video>
+
+
+https://github.com/Home-Assistant-Pro-Team/Power-Control/assets/62516592/91ff007d-e027-4a63-85ea-02b529a2234c
+
+
 
 È importante avere un'idea chiara di come funziona la fornitura elettrica nella maggior parte dei casi. Prendiamo ad esempio un contratto di 3 kW: la potenza effettivamente disponibile sarà di 3,3 kW, che include una riserva del 10% per gestire eventuali picchi di consumo. Tuttavia, è possibile utilizzare temporaneamente una potenza superiore con una tolleranza del 33%, che equivale a 3.990 W, per un massimo di 180 minuti. Durante questo periodo, vengono effettuati tre controlli per verificare il rispetto dei limiti di potenza.
 
