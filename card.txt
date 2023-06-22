@@ -1,6 +1,6 @@
 type: custom:button-card
 variables:
-  power_meter: sensor.shelly_em_assorbimento_casa
+  power_meter: sensor.shellyem_b168e7_channel_1_power
 styles:
   card:
     - background-color: var(--card-background-color)
@@ -36,8 +36,6 @@ custom_fields:
   watt:
     card:
       type: custom:button-card
-      variables:
-        power_meter: sensor.shelly_em_assorbimento_casa
       label: |
         [[[ 
             return 'Instantaneo '+ states[variables.power_meter].state + 'W'; 
@@ -76,11 +74,12 @@ custom_fields:
             layout: name_state
             name: |
               [[[ 
-                if (states['timer.distacco_carico'].state !== 'idle') { 
-                  return 'Distacco tra '; 
-                } else { 
-                  return 'Assorbibento: Ok👍'; 
-                } 
+                if (states['input_boolean.check_distacco'].state === 'on') { 
+                  return 'Protezione in corso 🛡️ '; } 
+                else if (states['timer.distacco_carico'].state !== 'idle') { 
+                  return 'Distacco tra '; }
+                else { 
+                  return 'Assorbibento: Ok👍'; } 
               ]]] 
             show_icon: false
             show_state: |
@@ -91,11 +90,12 @@ custom_fields:
               card:
                 - background-color: |
                     [[[ 
-                      if (states['timer.distacco_carico'].state !== 'idle') { 
-                        return 'red'; 
-                      } else { 
-                        return 'var(--disabled-text-color)';
-                      } 
+                      if (states['input_boolean.check_distacco'].state === 'on') { 
+                        return 'Chocolate'; } 
+                      else if (states['timer.distacco_carico'].state !== 'idle') { 
+                        return 'red'; } 
+                      else { 
+                        return 'var(--disabled-text-color)';} 
                     ]]] 
                 - border-style: none
                 - width: calc(140% - 5px)
