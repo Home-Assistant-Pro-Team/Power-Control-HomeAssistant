@@ -1,6 +1,7 @@
 type: custom:button-card
 variables:
-  power_meter: sensor.shellyem_b168e7_channel_1_power
+  power_meter: sensor.shelly_em_assorbimento_casa
+triggers_update: all
 styles:
   card:
     - background-color: var(--card-background-color)
