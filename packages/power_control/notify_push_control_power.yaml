@@ -1,39 +1,39 @@
 automation:
-- alias: notify_control_power_push
-  id: notify_control_power_push
-  mode: queued
-  trigger:
-    - platform: event
-      event_type: customizations
-      event_data:
-        types: notify_power_control
-  action:
+  - alias: notify_control_power_push
+    id: notify_control_power_push
+    mode: queued
+    trigger:
+      - platform: event
+        event_type: customizations
+        event_data:
+          types: notify_power_control
+    action:
       - alias: Invia notifica notifica push alle persone che non sono in casa
         repeat:
           for_each: >-
-              {% from 'alarm.jinja' import person_alarm %}
-              {% set output = namespace(state_home=[]) %}
-                {%for dict in person_alarm()|from_json if states[dict.person].state == 'home' %}
-                  {%- set output.state_home = output.state_home + ['notify.'+dict['notify'] ] -%}
-                {% endfor %}
-                  {{ output.state_home }}
+            {% from 'alarm.jinja' import person_alarm %}
+            {% set output = namespace(state_home=[]) %}
+              {%for dict in person_alarm()|from_json if states[dict.person].state == 'home' %}
+                {%- set output.state_home = output.state_home + ['notify.'+dict['notify'] ] -%}
+              {% endfor %}
+                {{ output.state_home }}
           sequence:
-              - service: "{{ repeat.item }}"
+            - service: "{{ repeat.item }}"
+              data:
+                message: "{{ trigger.event.data.message|default('Messaggio non impostato') }}"
+                title: "{{trigger.event.data.title |default('--POWER CONTROL--') }}"
                 data:
-                  message: "{{ trigger.event.data.message|default('Messaggio non impostato') }}"
-                  title: "{{trigger.event.data.title |default('--POWER CONTROL--') }}"
-                  data:
-                    tag: "{{ trigger.event.data.tag | default(None) }}"
-                    # ios
-                    push:
-                      sound:
-                        name: "default"
-                        critical: "{{ 1 if trigger.event.data.critical is defined else 0 }}"
-                        volume: "{{ trigger.event.data.critical if trigger.event.data.critical is defined else 1.0 }}"
-                    # android
-                    ttl: 0
-                    priority: 'high'
-                    channel: "{{ 'alarm_stream' if trigger.event.data.critical is defined else None }}"
-                    notification_icon: "{{ trigger.event.data.notification_icon |default('mdi:power-plug') }}"
-                    color: "{{ trigger.event.data.color |default('red') }}"
-                    sticky: "{{ trigger.event.data.sticky |default('true') }}"
+                  tag: "{{ trigger.event.data.tag | default(None) }}"
+                  # ios
+                  push:
+                    sound:
+                      name: "default"
+                      critical: "{{ 1 if trigger.event.data.critical is defined else 0 }}"
+                      volume: "{{ trigger.event.data.critical if trigger.event.data.critical is defined else 1.0 }}"
+                  # android
+                  ttl: 0
+                  priority: "high"
+                  channel: "{{ 'alarm_stream' if trigger.event.data.critical is defined else None }}"
+                  notification_icon: "{{ trigger.event.data.notification_icon |default('mdi:power-plug') }}"
+                  color: "{{ trigger.event.data.color |default('red') }}"
+                  sticky: "{{ trigger.event.data.sticky |default('true') }}"
