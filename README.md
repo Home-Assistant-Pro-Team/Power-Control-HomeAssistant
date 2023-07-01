@@ -1,6 +1,6 @@
 # Power-Control
 
-![version](https://camo.githubusercontent.com/8733716e2fd7444a0f383a9e5f43779a016bae35ddde4e1cc32a4f90bd9bb775/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f76657273696f6e2d312e322e332d626c7565) [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
+`- Version: 1.3 -`
 
 
 Il power control è un sistema che permette di gestire l'alimentazione elettrica in modo efficiente, prevenendo sovraccarichi e interruzioni di corrente. Il suo obiettivo principale è regolare il consumo di energia spegnendo i dispositivi in base alla potenza richiesta, evitando così il superamento dei limiti imposti e garantendo la stabilità del sistema elettrico. Inoltre, il sistema è in grado di riaccendere i dispositivi precedentemente spenti quando il consumo torna nella norma.
@@ -157,7 +157,7 @@ La card presenta 4 pulsanti nella parte bassa, ognuno dei quali ha una specifica
 
 	- Distacco carico: Questa impostazione richiede un valore, espresso in watt (W), che rappresenta la soglia oltre la quale il sistema eseguirà il distacco degli elettrodomestici. Se la potenza totale dei carichi supera questo valore, il sistema avvierà il distacco dei dispositivi.
 
-	- Ritardo Ripristino Carico: Questa opzione permette di impostare un tempo di attesa, espresso in secondi, dopo il quale i dispositivi verranno riaccesi automaticamente. Una volta trascorso il tempo specificato, il sistema avvierà la riaccensione dei dispositivi precedentemente disattivati.
+	- Ripristino Carico: Questa opzione consente di impostare un valore espresso in watt (W), che rappresenta la soglia al di sotto della quale i dispositivi verranno riattivati automaticamente. Il sistema avvierà il processo di riaccensione dei dispositivi precedentemente disattivati con un intervallo di 20 secondi tra una riaccensione e l'altra, a condizione che l'assorbimento istantaneo sia inferiore al valore impostato.
 
 	- Distacco Urgente:  Questo valore deve essere più alto rispetto al "Distacco Carico" e consente di spegnere immediatamente l'ultimo elettrodomestico presente nella lista se è acceso entro 30 secondi. Se invece l'ultimo dispositivo non viene acceso entro tale intervallo di tempo, verrà rispettato l'ordine della lista per il distacco degli altri carichi.
 
@@ -178,3 +178,24 @@ I fondi raccolti saranno utilizzati per acquistare nuovo materiale e realizzare 
 Grazie di cuore per il tuo sostegno!
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M4M1MI00I)
+
+### **Changelog**
+
+#### **Version: 1.3:**
+
+	- Eliminati due errore (non bloccanti) dal log che apparivano nel momento dell'avvio di HomeAssistant
+		```
+
+			{% set a = states('sensor.check_ultimo_acceso').split()|default %}
+			{% set b = state_attr('sensor.check_ultimo_acceso', 'old_state').split()|default %}
+			
+				.................
+
+
+			{% if state_attr('timer.distacco_carico', 'finishes_at') is not none %}
+				{{ now() > as_datetime(state_attr('timer.distacco_carico', 'finishes_at')) - timedelta(minutes=2) }}
+			{% else %}
+				False
+			{% endif %}
+		```
+	- La logica di riaccensione dei carichi è stata modificata. Ora, anziché basarsi solo sulla soglia di distacco, è stata aggiunta una soglia di riattivazione per evitare cicli continui indesiderati. Inoltre, è stato impostato un tempo fisso di 20 secondi per l'accensione tra un carico e l'altro.

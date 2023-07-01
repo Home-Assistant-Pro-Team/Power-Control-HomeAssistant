@@ -7,17 +7,17 @@ input_number:
     min: 3
     max: 183
     step: 5
-  ritardo_ripristino_carico:
-    name: Ritardo Ripristino Carico
+  ripristino_carico:
+    name: Ripristino Carico
     mode: box
-    icon: mdi:timelapse
-    unit_of_measurement: "sec"
-    min: 1
-    max: 360
-    step: 10
+    icon: mdi:power-plug
+    unit_of_measurement: "W"
+    min: 99
+    max: 8000
+    step: 100
   distacco_carico:
     name: Distacco carico
-    icon: mdi:flash
+    icon: mdi:power-plug-off
     min: 99
     max: 8000
     step: 100
@@ -25,7 +25,7 @@ input_number:
     mode: box
   distacco_urgente:
     name: Distacco Urgente
-    icon: mdi:flash
+    icon: mdi:alert
     min: 99
     max: 8000
     step: 100
@@ -70,8 +70,8 @@ template:
   - sensor:
       - name: Ultimo dispositivo acceso
         state: >-
-          {% set a = states('sensor.check_ultimo_acceso').split() %}
-          {% set b = state_attr('sensor.check_ultimo_acceso', 'old_state').split() %}
+          {% set a = states('sensor.check_ultimo_acceso').split()|default %}
+          {% set b = state_attr('sensor.check_ultimo_acceso', 'old_state').split()|default %}
           {% set result = (a|list|reject('in', b)|list)[0] %}
             {{ result if result is defined else 'Nessuno' }}
   - trigger:
@@ -108,7 +108,7 @@ template:
                       {{ ns.entities + [device.entity_id] }}
                   {% endif %}
                 {% endfor %}
-              {% endif %}
+              {% endif %}1
 
   - trigger:
       - platform: state
@@ -148,7 +148,12 @@ automation:
           {{ states[(power_control()|from_json)['Sensore W']].state|int(0) }}
     trigger:
       - platform: template
-        value_template: "{{ now() > as_datetime(state_attr('timer.distacco_carico', 'finishes_at')) - timedelta(minutes=2) }}"
+        value_template: >-
+          {% if state_attr('timer.distacco_carico', 'finishes_at') is not none %}
+            {{ now() > as_datetime(state_attr('timer.distacco_carico', 'finishes_at')) - timedelta(minutes=2) }}
+          {% else %}
+            False
+          {% endif %}
         id: preavviso_distacco
 
       - platform: template
@@ -175,9 +180,9 @@ automation:
         value_template: >-
           {% from 'power_control.jinja' import power_control %}
           {% set power = states[(power_control()|from_json)['Sensore W']].state|int(0) %}
-            {{ power < states('input_number.distacco_carico')|int(0) }}
+            {{ power < states('input_number.ripristino_carico')|int(0) }}
         for:
-          seconds: "{{ states('input_number.ritardo_ripristino_carico')|int(0) }}"
+          seconds: "20"
         id: ripristino_carico
 
     action:
@@ -341,7 +346,7 @@ automation:
                         entity_id: "{{ repeat.item }}"
                     - alias: Attendi per ripristinare elettrodomestici
                       delay:
-                        seconds: "{{ states('input_number.ritardo_ripristino_carico')|int(0) }}"
+                        seconds: "20"
               - alias: INVIA NOTIFICA
                 event: customizations
                 event_data:
