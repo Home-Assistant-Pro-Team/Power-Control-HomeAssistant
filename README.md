@@ -128,6 +128,7 @@ A questo punto, puoi caricare la cartella power_control nella directory "package
 - [Button card](https://github.com/custom-cards/button-card)
 - [Card Mod](https://github.com/thomasloven/lovelace-card-mod)
 - [Apexcharts card](https://github.com/RomRider/apexcharts-card)
+- [Mushroom](https://github.com/piitaya/lovelace-mushroom)
 
 
 #### **Installazione card:**
