@@ -108,7 +108,7 @@ template:
                       {{ ns.entities + [device.entity_id] }}
                   {% endif %}
                 {% endfor %}
-              {% endif %}1
+              {% endif %}
 
   - trigger:
       - platform: state
