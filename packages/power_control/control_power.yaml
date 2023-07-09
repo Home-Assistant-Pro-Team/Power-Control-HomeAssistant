@@ -58,15 +58,18 @@ template:
         state: >-
           {% from 'power_control.jinja' import entities_control %}
           {% set power = entities_control() %}
-            {{ power }}
+            {{ power.split()|count }}
+        attributes:
+          list_device: >-
+            {% from 'power_control.jinja' import entities_control %}
+            {% set power = entities_control() %}
+              {{ power }}
   - sensor:
       - name: Lista dispositivi accesi
         state: >-
           {% from 'power_control.jinja' import list_device %}
-          {% set power = list_device().split() %}
-          {% for entities in list_device().split() %}
-              {{ states[entities].name }}
-            {% endfor %}
+          {% set power = list_device() %}
+            {{ power.split()|count }}
   - sensor:
       - name: Ultimo dispositivo acceso
         state: >-
@@ -109,7 +112,6 @@ template:
                   {% endif %}
                 {% endfor %}
               {% endif %}
-
   - trigger:
       - platform: state
         entity_id: input_boolean.check_distacco
@@ -155,27 +157,23 @@ automation:
             False
           {% endif %}
         id: preavviso_distacco
-
       - platform: template
         value_template: >-
           {% from 'power_control.jinja' import power_control %}
           {% set power = states[(power_control()|from_json)['Sensore W']].state|int(0) %}
             {{ power > states('input_number.distacco_carico')|int(0) }}
         id: soglia_distacco
-
       - platform: template
         value_template: >-
           {% from 'power_control.jinja' import power_control %}
           {% set power = states[(power_control()|from_json)['Sensore W']].state|int(0) %}
             {{ power > states('input_number.distacco_urgente')|int(0) }}
         id: inizio_distacco
-
       - platform: event
         event_type: timer.finished
         event_data:
           entity_id: timer.distacco_carico
         id: inizio_distacco
-
       - platform: template
         value_template: >-
           {% from 'power_control.jinja' import power_control %}
@@ -184,7 +182,6 @@ automation:
         for:
           seconds: "20"
         id: ripristino_carico
-
     action:
       - alias: Notifica superamento soglia 2 minuti prima del distacco
         if:
@@ -198,7 +195,6 @@ automation:
               #critical: 1.0
               title: Consumi Elevati
               message: "{{ 'Superati i ' + power|string + 'watt.' }}"
-
       - alias: Raggiunta soglia per distacco avvia timer
         if:
           - "{{ trigger.id == 'soglia_distacco' }}"
@@ -209,7 +205,6 @@ automation:
               duration: "00:{{ states('input_number.ritardo_distacco_carico')|int(0) }}:00"
             target:
               entity_id: timer.distacco_carico
-
       - alias: Distacco carichi
         if:
           - "{{ trigger.id == 'inizio_distacco' }}"
@@ -218,14 +213,12 @@ automation:
             service: timer.cancel
             target:
               entity_id: timer.distacco_carico
-
           - alias: Elimina lista text
             service: input_text.set_value
             data:
               value: none
             target:
               entity_id: "input_text.list_power_control"
-
           - repeat:
               until:
                 - >-
@@ -251,7 +244,6 @@ automation:
                     - alias: Ritardo prossimo controllo per distacco
                       delay:
                         seconds: 10
-
                   else:
                     - alias: Esegui loop per distacco carichi
                       repeat:
@@ -311,7 +303,6 @@ automation:
                                   types: notify_power_control
                                   message: "{{ 'ATTENZIONE. Superati i ' + power|string + ' watt! Non ci sono elettrodomestici da spegnere.' }}"
                               - stop: TERMINA DISTACCA PER MANCANDA DISPOSITIVI
-
       - alias: Ripristino carico
         if:
           - alias: Controllo se è scattato il distacco carichi
