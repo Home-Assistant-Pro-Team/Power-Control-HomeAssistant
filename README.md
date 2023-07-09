@@ -1,6 +1,6 @@
 # Power-Control
 
-`- Version: 1.3 -`
+`- Version: 1.4 -`
 
 
 Il power control è un sistema che permette di gestire l'alimentazione elettrica in modo efficiente, prevenendo sovraccarichi e interruzioni di corrente. Il suo obiettivo principale è regolare il consumo di energia spegnendo i dispositivi in base alla potenza richiesta, evitando così il superamento dei limiti imposti e garantendo la stabilità del sistema elettrico. Inoltre, il sistema è in grado di riaccendere i dispositivi precedentemente spenti quando il consumo torna nella norma.
@@ -200,3 +200,7 @@ Grazie di cuore per il tuo sostegno!
 			{% endif %}
 		```
 	- La logica di riaccensione dei carichi è stata modificata. Ora, anziché basarsi solo sulla soglia di distacco, è stata aggiunta una soglia di riattivazione per evitare cicli continui indesiderati. Inoltre, è stato impostato un tempo fisso di 20 secondi per l'accensione tra un carico e l'altro.
+	
+#### **Version: 1.4:**
+	
+	- Risolto limite dei 255 caratteri per la lista dispositivi da spengnere
