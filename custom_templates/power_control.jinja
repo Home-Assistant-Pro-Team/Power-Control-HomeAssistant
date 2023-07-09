@@ -37,7 +37,7 @@
         {# Restituisci entity_id del sensore power se associato #}
         {%- set sensor_power =expand(device_entities(id))|selectattr('entity_id', 'match', 'sensor.')|selectattr('attributes.device_class', 'defined')|selectattr('attributes.device_class', 'eq', 'power')|map(attribute='entity_id')|list %}
         {# controlla che assorbimento sia minore di 15W #}
-        {%- for power in sensor_power if states(power)|int(0) < 15- %}
+        {%- for power in sensor_power if states(power)|int(0) < 15 -%}
             {# entità nella lista in stato ON con sensore di potenza inferiore a 15W #}
             {%- set output.sensor_power_off = output.sensor_power_off + [on_power_off] -%}
         {% endfor %}
