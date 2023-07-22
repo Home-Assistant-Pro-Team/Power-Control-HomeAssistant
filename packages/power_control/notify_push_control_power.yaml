@@ -11,9 +11,9 @@ automation:
       - alias: Invia notifica notifica push alle persone che non sono in casa
         repeat:
           for_each: >-
-            {% from 'alarm.jinja' import person_alarm %}
+            {% from 'personal.jinja' import persons %}
             {% set output = namespace(state_home=[]) %}
-              {%for dict in person_alarm()|from_json if states[dict.person].state == 'home' %}
+              {%for dict in persons()|from_json if states[dict.person].state == 'home' %}
                 {%- set output.state_home = output.state_home + ['notify.'+dict['notify'] ] -%}
               {% endfor %}
                 {{ output.state_home }}
@@ -23,7 +23,9 @@ automation:
                 message: "{{ trigger.event.data.message|default('Messaggio non impostato') }}"
                 title: "{{trigger.event.data.title |default('--POWER CONTROL--') }}"
                 data:
+                  image: "{{ trigger.event.data.image | default(None) }}"
                   tag: "{{ trigger.event.data.tag | default(None) }}"
+
                   # ios
                   push:
                     sound:

@@ -1,18 +1,13 @@
-{% macro entities_control() %}
-    {% set list_entities = 
-         [  
-			'switch.idromassaggio',
-            'climate.camera_ac',
-            'climate.salotto',
-			'climate.condizionatore_salone',
-			'switch.lavatrice1pm',
-            'switch.forno'
-         ]
-    %}
-    {% for d in list_entities %}
-        {{ d }}
-    {% endfor %}
-{% endmacro %}
+{% set list_entities = 
+    [  
+       'switch.idromassaggio',
+       'climate.camera_ac',
+       'climate.salotto',
+       'climate.condizionatore_salone',
+       'switch.lavatrice1pm',
+       'switch.forno'
+    ]
+%}
 
 {% macro power_control() %}
 	{
@@ -24,14 +19,18 @@
 #         DA QUESTO PUNTO NON MODIFICARE
 ##############################################################
 
+{% macro entities_control() %}
+    {% for d in list_entities %}
+        {{ d }}
+    {% endfor %}
+{% endmacro %}
+
 {% macro list_device() %}
     {% set output = namespace(sensor_power_off=[],result=[]) %}
-    {# lista controllo carichi #}
-    {%- set list = state_attr('sensor.lista_carichi', 'list_device').split() -%}
     {# escludi spenti e non disponibili #}
-    {%- set filter = states|selectattr('entity_id', 'in', list)|rejectattr('state', 'in',['off', 'unavailable', 'unknown'])|map(attribute='entity_id')|list-%}
+    {%- set filter = states|selectattr('entity_id', 'in', list_entities)|rejectattr('state', 'in',['off', 'unavailable', 'unknown'])|map(attribute='entity_id')|list-%}
     {# lista filtrate ed ordinata #}
-    {%-  for on_power_off in list if on_power_off in filter  -%}
+    {%-  for on_power_off in list_entities if on_power_off in filter  -%}
         {# recupera id dispositivo #}
         {% set id = device_id(on_power_off)%}
         {# Restituisci entity_id del sensore power se associato #}
@@ -43,7 +42,7 @@
         {% endfor %}
     {% endfor %}
     {# ottieni le entità ordinate da spegnere #}
-    {% for t in list if t in filter and not t in output.sensor_power_off %}
+    {% for t in list_entities if t in filter and not t in output.sensor_power_off %}
         {{t}}
     {% endfor %}
 {% endmacro %}

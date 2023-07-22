@@ -43,11 +43,7 @@ template:
         state: "{{ states('sensor.dispositivi_esclusi_dal_ripristino_carico') }}"
         options: >-
           {% from 'power_control.jinja' import entities_control %}
-          {% set output = namespace(numbers=[]) %}
-            {% for entities in entities_control().split() %}
-              {% set output.numbers = output.numbers + [states[entities].name ] %}
-            {% endfor %}
-              {{ ['RESET'] + output.numbers }}
+            {{ ['RESET'] + expand(entities_control().split())|map(attribute='name')|list }}
         select_option:
           - event: customizations
             event_data:
@@ -57,19 +53,24 @@ template:
       - name: Lista carichi
         state: >-
           {% from 'power_control.jinja' import entities_control %}
-          {% set power = entities_control() %}
-            {{ power.split()|count }}
+            {{ entities_control().split()|count }}
         attributes:
           list_device: >-
             {% from 'power_control.jinja' import entities_control %}
-            {% set power = entities_control() %}
-              {{ power }}
+              {{ entities_control() }}
+          list_device_name: >-
+            {% from 'power_control.jinja' import entities_control %}
+            {{ expand(entities_control().split())|map(attribute='name')|list }}
   - sensor:
       - name: Lista dispositivi accesi
         state: >-
           {% from 'power_control.jinja' import list_device %}
-          {% set power = list_device() %}
-            {{ power.split()|count }}
+            {{ list_device().split()|count }}
+        attributes:
+          list_device_name: >-
+            {% from 'power_control.jinja' import list_device %}
+              {{ expand(list_device().split())|map(attribute='name')|list }}
+
   - sensor:
       - name: Ultimo dispositivo acceso
         state: >-
@@ -249,14 +250,12 @@ automation:
                       repeat:
                         count: >-
                           {% from 'power_control.jinja' import list_device %}
-                          {% set power = list_device().split() %}
-                            {{ power|count + 1 }}
+                            {{ list_device().split()|count + 1 }}
                         sequence:
                           - variables:
                               power_device: >-
                                 {% from 'power_control.jinja' import list_device %}
-                                {% set power = list_device().split() %}
-                                  {{ power }}
+                                  {{ list_device().split() }}
                               power: >-
                                 {% from 'power_control.jinja' import power_control %}
                                   {{ states[(power_control()|from_json)['Sensore W']].state|int(0) }}

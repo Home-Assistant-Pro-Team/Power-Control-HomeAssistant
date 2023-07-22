@@ -6,12 +6,10 @@ automation:
       volume: 0.5
       alexa: >-
         {% from 'personal.jinja' import media_players %}
-        {% set media = media_players('alexa_media').split() %}
-        {{ media}}
+        {{ media_players('alexa_media').split() }}
       google: >-
         {% from 'personal.jinja' import media_players %}
-        {% set media = media_players('cast').split() %}
-        {{ media}}
+        {{ media_players('cast').split() }}
     trigger:
       - platform: event
         event_type: customizations
