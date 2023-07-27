@@ -226,7 +226,7 @@ automation:
                   {% from 'power_control.jinja' import power_control %}
                   {{ states[(power_control()|from_json)['Sensore W']].state|int(0) > states('input_number.distacco_carico')|int(0) }}
               sequence:
-                - alias: Spegni ultimo device della lista se acceso negli ultimi 30sec per distacco urgente ed escludilo dal ripristino
+                - alias: Spegni device della lista se acceso negli ultimi 30sec per distacco urgente ed escludilo dal ripristino
                   if:
                     - "{{ power > states('input_number.distacco_urgente')|int(0) }}"
                     - "{{ now() < states['sensor.ultimo_dispositivo_acceso'].last_changed + timedelta(seconds=30) and not is_state('sensor.ultimo_dispositivo_acceso', 'Nessuno') }}"
@@ -242,6 +242,10 @@ automation:
                       service: homeassistant.turn_off
                       target:
                         entity_id: "{{ states('sensor.ultimo_dispositivo_acceso') }}"
+                    - alias: Attiva bollean per sapere che distacco carichi è stato attivato
+                      service: input_boolean.turn_on
+                      target:
+                        entity_id: input_boolean.check_distacco
                     - alias: Ritardo prossimo controllo per distacco
                       delay:
                         seconds: 10
@@ -323,7 +327,7 @@ automation:
                     {% for device in states if device.entity_id in state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %}
                       {% set output.state_home = output.state_home +  [device.entity_id] %}
                     {% endfor %}
-                      {{ states('input_text.list_power_control').split()|reject('in', output.state_home)|list }}
+                      {{ states('input_text.list_power_control').split()|reject('in', [output.state_home, 'none'])|list }}
                   sequence:
                     - alias: INVIA NOTIFICA
                       event: customizations
