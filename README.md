@@ -184,7 +184,8 @@ Grazie di cuore per il tuo sostegno!
 
 #### **Version: 1.3:**
 
-	- Eliminati due errore (non bloccanti) dal log che apparivano nel momento dell'avvio di HomeAssistant
+- Eliminati due errore (non bloccanti) dal log che apparivano nel momento dell'avvio di HomeAssistant
+ 
 		```
 
 			{% set a = states('sensor.check_ultimo_acceso').split()|default %}
@@ -199,8 +200,9 @@ Grazie di cuore per il tuo sostegno!
 				False
 			{% endif %}
 		```
-	- La logica di riaccensione dei carichi è stata modificata. Ora, anziché basarsi solo sulla soglia di distacco, è stata aggiunta una soglia di riattivazione per evitare cicli continui indesiderati. Inoltre, è stato impostato un tempo fisso di 20 secondi per l'accensione tra un carico e l'altro.
+  
+- La logica di riaccensione dei carichi è stata modificata. Ora, anziché basarsi solo sulla soglia di distacco, è stata aggiunta una soglia di riattivazione per evitare cicli continui indesiderati. Inoltre, è stato impostato un tempo fisso di 20 secondi per l'accensione tra un carico e l'altro.
 	
 #### **Version: 1.4:**
 	
-	- Risolto limite dei 255 caratteri per la lista dispositivi da spengnere
+- Risolto limite dei 255 caratteri per la lista dispositivi da spengnere
