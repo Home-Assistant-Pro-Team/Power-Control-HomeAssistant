@@ -1,6 +1,10 @@
 # Power-Control
 
 `- Version: 1.4 -`
+
+
+
+
 ![Immagine 2023-09-27 162710](https://github.com/Home-Assistant-Pro-Team/Power-Control-HomeAssistant/assets/48358142/278205a3-d6dd-4d7a-b5b5-9ea713940687)
 
 
