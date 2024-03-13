@@ -4,14 +4,13 @@
        'climate.camera_ac',
        'climate.salotto',
        'climate.condizionatore_salone',
-       'switch.lavatrice1pm',
-       'switch.forno'
+       'switch.lavatrice1pm'
     ]
 %}
 
 {% macro power_control() %}
 	{
-		"Sensore W": "sensor.shelly_em_assorbimento_casa"
+		"Sensore W": "sensor.generale_power"
 	}
 {% endmacro %}
 
@@ -26,23 +25,18 @@
 {% endmacro %}
 
 {% macro list_device() %}
-    {% set output = namespace(sensor_power_off=[],result=[]) %}
+    {% set output = namespace(sensor_power_off=[], general_entity_on=[]) %}
     {# escludi spenti e non disponibili #}
-    {%- set filter = states | selectattr('entity_id', 'in', list_entities) | rejectattr('state', 'in',['off', 'unavailable', 'unknown']) | map(attribute='entity_id') | list-%}
-    {# lista filtrate ed ordinata #}
-    {%-  for on_power_off in list_entities if on_power_off in filter  -%}
-        {# recupera id dispositivo #}
-        {% set id = device_id(on_power_off)%}
-        {# Restituisci entity_id del sensore power se associato #}
-        {%- set sensor_power =expand(device_entities(id)) | selectattr('entity_id', 'match', 'sensor.') | selectattr('attributes.device_class', 'defined') | selectattr('attributes.device_class', 'eq', 'power') | map(attribute='entity_id') | list %}
+    {%- for entity_on in list_entities if not states[entity_on].state in ['off', 'unavailable', 'unknown'] -%}
+        {%- set output.general_entity_on = output.general_entity_on + [entity_on] -%}
+        {# recupera tutte le entità del dispositivo #}
+        {%- set entities_devices = entity_on | device_id | device_entities -%}
+            {# Restituisci entity_id del sensore power se associato #}
+            {%- set sensor_power = expand(entities_devices) | selectattr('state', 'is_number') | selectattr('domain', 'eq', 'sensor') | selectattr('attributes.device_class', 'defined') | selectattr('attributes.device_class', 'eq', 'power') | map(attribute='entity_id') | list -%}
         {# controlla che assorbimento sia minore di 15W #}
-        {%- for power in sensor_power if states(power) | int(0) < 15 -%}
-            {# entità nella lista in stato ON con sensore di potenza inferiore a 15W #}
-            {%- set output.sensor_power_off = output.sensor_power_off + [on_power_off] -%}
-        {% endfor %}
-    {% endfor %}
-    {# ottieni le entità ordinate da spegnere #}
-    {% for t in list_entities if t in filter and not t in output.sensor_power_off %}
-        {{t}}
-    {% endfor %}
+        {%- for entity_power_off in sensor_power if states(entity_power_off) | int(0) < 15 -%}
+            {%- set output.sensor_power_off = output.sensor_power_off + [entity_on] -%} 
+        {% endfor -%}  
+    {% endfor -%}   
+    {{ output.general_entity_on | reject('in',  output.sensor_power_off) | join(' ') }}
 {% endmacro %}

@@ -2,25 +2,19 @@
 
 `- Version: 1.4 -`
 
-
-
-
 ![Immagine 2023-09-27 162710](https://github.com/Home-Assistant-Pro-Team/Power-Control-HomeAssistant/assets/48358142/278205a3-d6dd-4d7a-b5b5-9ea713940687)
 
-
 Il power control è un sistema che permette di gestire l'alimentazione elettrica in modo efficiente, prevenendo sovraccarichi e interruzioni di corrente. Il suo obiettivo principale è regolare il consumo di energia spegnendo i dispositivi in base alla potenza richiesta, evitando così il superamento dei limiti imposti e garantendo la stabilità del sistema elettrico. Inoltre, il sistema è in grado di riaccendere i dispositivi precedentemente spenti quando il consumo torna nella norma.
-
 
 https://github.com/Home-Assistant-Pro-Team/Power-Control/assets/62516592/9c10e918-f4c3-4458-83e7-35cc3fe0f49f
 
 È importante avere un'idea chiara di come funziona la fornitura elettrica nella maggior parte dei casi. Prendiamo ad esempio un contratto di 3 kW: la potenza effettivamente disponibile sarà di 3,3 kW, che include una riserva del 10% per gestire eventuali picchi di consumo. Tuttavia, è possibile utilizzare temporaneamente una potenza superiore con una tolleranza del 33%, che equivale a 3.990 W, per un massimo di 180 minuti. Durante questo periodo, vengono effettuati tre controlli per verificare il rispetto dei limiti di potenza.
 
-| Potenza  | Effettiva 	| Tolleranza 33% 	|
-| -------- | --- 	 	| ----------- 		|
-| 3.0 kW   | 3.3 kW  	| 3990 W   			|
-| 4.5 kW   | 4.9 kW  	| 5980 W  			|
-| 6.0 kW   | 6.6 kW  	| 7980 W  			|
-
+| Potenza  | Effettiva | Tolleranza 33% |
+| -------- | --------- | -------------- |
+| 3.0 kW   | 3.3 kW    | 3990 W         |
+| 4.5 kW   | 4.9 kW    | 5980 W         |
+| 6.0 kW   | 6.6 kW    | 7980 W         |
 
 Ora, con queste informazioni chiare in mente, possiamo impostare correttamente il pacchetto di power control. Ciò che rende questo pacchetto particolare è la sua versatilità: i dispositivi che possono essere inclusi nella lista di controllo possono appartenere a diversi domini, come switch, light, fan, climate, media_player, ecc. Non ci sono limiti al numero di dispositivi che possono essere inseriti nella lista. Durante il processo di controllo dei dispositivi, vengono eseguiti controlli specifici per determinare se un dispositivo è effettivamente in uso. Si verifica se il dispositivo dispone di un sensore di consumo energetico (device_class power) e, in tal caso, se il consumo supera la soglia di 15 W. Questo controllo consente di identificare se il dispositivo sta effettivamente assorbendo energia. Nel caso in cui un dispositivo non disponga di un sensore di consumo energetico, viene considerato solo lo stato del dispositivo stesso per determinare se è attivo o spento.
 
@@ -211,3 +205,11 @@ Grazie di cuore per il tuo sostegno!
 #### **Version: 1.4:**
 	
 - Risolto limite dei 255 caratteri per la lista dispositivi da spengnere
+
+#### **Version: 1.5:**
+
+- Modificato template della macro
+- Aggiunto recupero volume Alexa
+- Fix tolto errore che non permetteva più di escludere dispositivo dal ripristino carico
+- Cambiato sensor.marquee_power_control 
+- Cambiata variabile power utilizzata dall'automazione.

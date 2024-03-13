@@ -16,30 +16,50 @@ automation:
         event_data:
           types: notify_power_control
     action:
-      - alias: Imposta volume Notifica
-        service: media_player.volume_set
-        data:
-          entity_id: "{{expand(google + alexa)|map(attribute='entity_id')|list}}"
-          volume_level: "{{ trigger.event.data.volume|default(volume) }}"
-
       - alias: INVIA NOTIFICA
         parallel:
-          - alias: Invia notifica ad Google
-            if: >-
-              {{google|count > 0}}
+          - alias: GOOGLE
+            if: "{{ google | count > 0 }}"
             then:
+              - alias: Imposta volume Notifica
+                service: media_player.volume_set
+                data:
+                  entity_id: "{{ google }}"
+                  volume_level: "{{ trigger.event.data.volume | default(volume) }}"
               - service: tts.google_translate_say
                 data:
-                  entity_id: "{{google}}"
-                  message: "{{ trigger.event.data.message |default('Messaggio non impostato')}}"
+                  entity_id: "{{ google }}"
+                  message: "{{ trigger.event.data.message | default('Messaggio non impostato') }}"
 
-          - alias: Invia notifica ad Alexa
+          - alias: ALEXA
             if: >-
-              {{alexa|count > 0}}
+              {{alexa | count > 0}}
             then:
-              service: notify.alexa_media
-              data:
-                target: "{{alexa}}"
+              - variables:
+                  volume_level: >-
+                    [
+                    {% for a in alexa  %}
+                      {{ state_attr(a, 'volume_level') if state_attr(a, 'volume_level') is number else trigger.event.data.message | default('Messaggio non impostato') }}
+                    {% if not loop.last %} , {% endif %}
+                    {% endfor %} 
+                    ]
+              - alias: Imposta volume Notifica
+                service: media_player.volume_set
                 data:
-                  method: spoken
-                message: "{{ trigger.event.data.message |default('Messaggio non impostato')}}"
+                  entity_id: "{{ alexa }}"
+                  volume_level: "{{ trigger.event.data.volume | default(volume) }}"
+              - service: notify.alexa_media
+                data:
+                  target: "{{ alexa }}"
+                  data:
+                    method: spoken
+                  message: "{{ trigger.event.data.message | default('Messaggio non impostato') }}"
+              - delay: "00:00:06"
+              - repeat:
+                  for_each: "{{ alexa }}"
+                  sequence:
+                    - alias: Imposta volume Notifica
+                      service: media_player.volume_set
+                      data:
+                        entity_id: "{{ repeat.item }}"
+                        volume_level: "{{ volume_level[repeat.index - 1] }}"
