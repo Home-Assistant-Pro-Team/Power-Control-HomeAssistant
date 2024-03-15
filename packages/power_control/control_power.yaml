@@ -131,7 +131,7 @@ template:
       - name: marquee power control
         state: >-
           {% if trigger.entity_id == 'input_boolean.check_distacco' %}
-            {{ 'Ultimo intervento effettuato ' + relative_time(trigger.to_state.last_changed) | replace('years', 'anni') | replace('year', 'anno') | replace('days','giorno') | replace('day','giorni') | replace ('hours','ore') | replace ('hour','ora') | replace ('minutes','minuti') | replace ('minute','minuto') | replace ('seconds','secondi') + ' fa'}}
+            {{ 'Ultimo intervento effettuato ' + relative_time(states['input_boolean.check_distacco'].last_changed) | replace('years', 'anni') | replace('year', 'anno') | replace('days','giorno') | replace('day','giorni') | replace ('hours','ore') | replace ('hour','ora') | replace ('minutes','minuti') | replace ('minute','minuto') | replace ('seconds','secondi') + ' fa'}}
           {% else %}
             {{ trigger.event.data.message|default('Messaggio non impostato') }}
           {% endif %}

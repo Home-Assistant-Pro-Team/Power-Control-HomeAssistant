@@ -211,5 +211,6 @@ Grazie di cuore per il tuo sostegno!
 - Modificato template della macro
 - Aggiunto recupero volume Alexa
 - Fix tolto errore che non permetteva più di escludere dispositivo dal ripristino carico
-- Cambiato sensor.marquee_power_control 
+- Cambiato sensor.marquee_power_control
 - Cambiata variabile power utilizzata dall'automazione.
+- aggiunto file entities_generali.yaml essere usato in tutti i pacchetti

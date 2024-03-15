@@ -1,0 +1,41 @@
+input_number:
+  costo_energia_casa:
+    name: Costo Energia Casa
+    min: 0.000
+    max: 99999.000
+    unit_of_measurement: "€"
+    step: 0.01
+    mode: box
+    icon: mdi:currency-eur
+
+template:
+  - sensor:
+      - name: Cambio volumi alexa
+        state: >
+          {% from 'personal.jinja' import media_players %}
+          {% set alexa = media_players('alexa_media').split() %}
+          {{ expand(alexa) | map(attribute='attributes.volume_level') |select('defined') | list}}
+
+  - trigger:
+      - platform: state
+        entity_id: sensor.cambio_volumi_alexa
+    sensor:
+      - name: Volumi alexa
+        state: "{{ now() }}"
+        attributes:
+          list_device: >-
+            {% from 'personal.jinja' import media_players %}
+            {% set alexa = media_players('alexa_media').split() %}
+            {
+              {%- for key in alexa %}
+              {{ '"' ~ key ~ '" : ' }}
+                {% if state_attr(key, 'volume_level') is number %}
+                  {{ state_attr(key, 'volume_level') }}
+                {% elif state_attr('sensor.test_volumi_alexa','list_device')[key] is defined and state_attr('sensor.test_volumi_alexa','list_device')[key] is number %}
+                  {{ this_entity[key] }}  
+                {% else %}
+                  {{ 0.5 }}
+                {% endif %}
+              {%- if not loop.last %}, {% endif %}
+              {%- endfor %}
+            }
