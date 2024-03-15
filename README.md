@@ -214,3 +214,4 @@ Grazie di cuore per il tuo sostegno!
 - Cambiato sensor.marquee_power_control
 - Cambiata variabile power utilizzata dall'automazione.
 - aggiunto file entities_generali.yaml essere usato in tutti i pacchetti
+- recupero/ripristino volume alexa
