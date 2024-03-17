@@ -10,63 +10,46 @@ automation:
       google: >-
         {% from 'personal.jinja' import media_players %}
         {{ media_players('cast').split() }}
+      volume_media_player: "{{ state_attr('sensor.volumi_media_player', 'list_device').values() | list }}"
     trigger:
       - platform: event
         event_type: customizations
         event_data:
           types: notify_power_control
     action:
+      - alias: Imposta volume Notifica
+        service: media_player.volume_set
+        data:
+          entity_id: "{{ google + alexa }}"
+          volume_level: "{{ trigger.event.data.volume | default(volume) }}"
+
       - alias: INVIA NOTIFICA
         parallel:
           - alias: GOOGLE
             if: "{{ google | count > 0 }}"
             then:
-              - variables:
-                  volume_google: "{{ state_attr('sensor.volumi_google', 'list_device').values() | list }}"
-              - alias: Imposta volume Notifica
-                service: media_player.volume_set
-                data:
-                  entity_id: "{{ google }}"
-                  volume_level: "{{ trigger.event.data.volume | default(volume) }}"
               - service: tts.google_translate_say
                 data:
                   entity_id: "{{ google }}"
                   message: "{{ trigger.event.data.message | default('Messaggio non impostato') }}"
-              - delay: 
-                  seconds: "{{ (5 + (trigger.event.data.message | regex_replace('[a-zA-Z0-9]', '')).split()|count * 0.35 + trigger.event.data.message | count * 0.06) | round(0, default=5) }}"
-              - repeat:
-                  for_each: "{{ google }}"
-                  sequence:
-                    - alias: Imposta volume Notifica
-                      service: media_player.volume_set
-                      data:
-                        entity_id: "{{ repeat.item }}"
-                        volume_level: "{{ volume_google[repeat.index - 1] }}"
 
           - alias: ALEXA
             if: >-
               {{ alexa | count > 0}}
             then:
-              - variables:
-                  volume_alexa: "{{ state_attr('sensor.volumi_alexa', 'list_device').values() | list }}"
-              - alias: Imposta volume Notifica
-                service: media_player.volume_set
-                data:
-                  entity_id: "{{ alexa }}"
-                  volume_level: "{{ trigger.event.data.volume | default(volume) }}"
               - service: notify.alexa_media
                 data:
                   target: "{{ alexa }}"
                   data:
                     method: spoken
                   message: "{{ trigger.event.data.message | default('Messaggio non impostato') }}"
-              - delay: 
-                  seconds: "{{ (5 + (trigger.event.data.message | regex_replace('[a-zA-Z0-9]', '')).split()|count * 0.35 + trigger.event.data.message | count * 0.06) | round(0, default=5) }}"
-              - repeat:
-                  for_each: "{{ alexa }}"
-                  sequence:
-                    - alias: Imposta volume Notifica
-                      service: media_player.volume_set
-                      data:
-                        entity_id: "{{ repeat.item }}"
-                        volume_level: "{{ volume_alexa[repeat.index - 1] }}"
+      - delay:
+          seconds: "{{ (5 + (trigger.event.data.message | regex_replace('[a-zA-Z0-9]', '')).split()|count * 0.35 + trigger.event.data.message | count * 0.06) | round(0, default=5) }}"
+      - repeat:
+          for_each: "{{ alexa + google }}"
+          sequence:
+            - alias: Imposta volume Notifica
+              service: media_player.volume_set
+              data:
+                entity_id: "{{ repeat.item }}"
+                volume_level: "{{ volume_media_player[repeat.index - 1] }}"
