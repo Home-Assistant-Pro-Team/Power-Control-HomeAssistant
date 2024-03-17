@@ -32,12 +32,13 @@ template:
           list_device: >-
             {% from 'personal.jinja' import media_players %}
             {% set google = media_players('cast').split() %}
+            {% set this_entity = state_attr('sensor.volumi_google','list_device') %}
             {
               {%- for key in google %}
               {{ '"' ~ key ~ '" : ' }}
                 {% if state_attr(key, 'volume_level') is number %}
                   {{ state_attr(key, 'volume_level') }}
-                {% elif state_attr('sensor.volumi_google','list_device')[key] is defined and state_attr('sensor.volumi_google','list_device')[key] is number %}
+                {% elif this_entity[key] is defined and this_entity[key] is number %}
                   {{ this_entity[key] }}  
                 {% else %}
                   {{ 0.5 }}
@@ -56,12 +57,13 @@ template:
           list_device: >-
             {% from 'personal.jinja' import media_players %}
             {% set alexa = media_players('alexa_media').split() %}
+            {% set this_entity = state_attr('sensor.volumi_alexa','list_device') %}
             {
               {%- for key in alexa %}
               {{ '"' ~ key ~ '" : ' }}
                 {% if state_attr(key, 'volume_level') is number %}
                   {{ state_attr(key, 'volume_level') }}
-                {% elif state_attr('sensor.volumi_alexa','list_device')[key] is defined and state_attr('sensor.volumi_alexa','list_device')[key] is number %}
+                {% elif this_entity[key] is defined and this_entity[key] is number %}
                   {{ this_entity[key] }}  
                 {% else %}
                   {{ 0.5 }}
