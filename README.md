@@ -1,6 +1,6 @@
 # Power-Control
 
-`- Version: 1.4 -`
+`- Version: 1.5 -`
 
 ![Immagine 2023-09-27 162710](https://github.com/Home-Assistant-Pro-Team/Power-Control-HomeAssistant/assets/48358142/278205a3-d6dd-4d7a-b5b5-9ea713940687)
 
@@ -208,10 +208,9 @@ Grazie di cuore per il tuo sostegno!
 
 #### **Version: 1.5:**
 
-- Modificato template della macro
-- Aggiunto recupero volume Alexa
-- Fix tolto errore che non permetteva più di escludere dispositivo dal ripristino carico
-- Cambiato sensor.marquee_power_control
+- Modificato template della macro.
+- Aggiunto recupero e ripristino volume alexa e google.
+- Fix tolto errore che non permetteva più di escludere dispositivo dal ripristino carico.
+- Cambiato sensor.marquee_power_control.
 - Cambiata variabile power utilizzata dall'automazione.
-- aggiunto file entities_generali.yaml essere usato in tutti i pacchetti
-- recupero/ripristino volume alexa
+- Aggiunto file entities_generali.yaml che presenta entità utilizzate in tutti i pacchetti di questo github.

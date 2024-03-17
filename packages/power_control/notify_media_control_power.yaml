@@ -21,6 +21,8 @@ automation:
           - alias: GOOGLE
             if: "{{ google | count > 0 }}"
             then:
+              - variables:
+                  volume_google: "{{ state_attr('sensor.volumi_google', 'list_device').values() | list }}"
               - alias: Imposta volume Notifica
                 service: media_player.volume_set
                 data:
@@ -30,13 +32,23 @@ automation:
                 data:
                   entity_id: "{{ google }}"
                   message: "{{ trigger.event.data.message | default('Messaggio non impostato') }}"
+              - delay: 
+                  seconds: "{{ (5 + (trigger.event.data.message | regex_replace('[a-zA-Z0-9]', '')).split()|count * 0.35 + trigger.event.data.message | count * 0.06) | round(0, default=5) }}"
+              - repeat:
+                  for_each: "{{ google }}"
+                  sequence:
+                    - alias: Imposta volume Notifica
+                      service: media_player.volume_set
+                      data:
+                        entity_id: "{{ repeat.item }}"
+                        volume_level: "{{ volume_google[repeat.index - 1] }}"
 
           - alias: ALEXA
             if: >-
-              {{alexa | count > 0}}
+              {{ alexa | count > 0}}
             then:
               - variables:
-                  volume_level: "{{ state_attr('sensor.volumi_alexa', 'list_device').values() | list }}"
+                  volume_alexa: "{{ state_attr('sensor.volumi_alexa', 'list_device').values() | list }}"
               - alias: Imposta volume Notifica
                 service: media_player.volume_set
                 data:
@@ -48,7 +60,8 @@ automation:
                   data:
                     method: spoken
                   message: "{{ trigger.event.data.message | default('Messaggio non impostato') }}"
-              - delay: "00:00:06"
+              - delay: 
+                  seconds: "{{ (5 + (trigger.event.data.message | regex_replace('[a-zA-Z0-9]', '')).split()|count * 0.35 + trigger.event.data.message | count * 0.06) | round(0, default=5) }}"
               - repeat:
                   for_each: "{{ alexa }}"
                   sequence:
@@ -56,4 +69,4 @@ automation:
                       service: media_player.volume_set
                       data:
                         entity_id: "{{ repeat.item }}"
-                        volume_level: "{{ volume_level[repeat.index - 1] }}"
+                        volume_level: "{{ volume_alexa[repeat.index - 1] }}"
