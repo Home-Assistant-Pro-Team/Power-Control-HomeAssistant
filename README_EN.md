@@ -5,37 +5,40 @@
 The package was written in Italian, but can be easily translated. As for the translation of the README, we relied on automatic translators and apologize for any translation errors.
 
 
-Power control is a system for managing the power supply efficiently, preventing overloads and power outages. Its main objective is to regulate power consumption by turning off devices according to the required power, thus preventing exceeding the set limits and ensuring the stability of the electrical system. In addition, the system is able to turn previously turned off devices back on when consumption returns to normal.
+The power control is a system that allows for the efficient management of electrical power, preventing overloads and power interruptions. Its main objective is to regulate energy consumption by shutting down devices based on the required power, thereby avoiding exceeding set limits and ensuring the stability of the electrical system. Additionally, the system is capable of reactivating previously shut down devices when consumption returns to normal.
+
+<https://github.com/Home-Assistant-Pro-Team/Power-Control/assets/62516592/9c10e918-f4c3-4458-83e7-35cc3fe0f49f>
+
+It is important to have a clear understanding of how electrical supply works in most cases. Let's take, for example, a 3 kW contract: the actual available power will be 3.3 kW, which includes a 10% reserve to manage any consumption peaks. However, it is possible to temporarily use a higher power with a tolerance of 33%, which amounts to 3,990 W, for a maximum of 180 minutes. During this period, three checks are carried out to verify compliance with the power limits.
+
+| Potenza  | Effettiva | Tolleranza 33% |
+| -------- | --------- | -------------- |
+| 3.0 kW   | 3.3 kW    | 3990 W         |
+| 4.5 kW   | 4.9 kW    | 5980 W         |
+| 6.0 kW   | 6.6 kW    | 7980 W         |
 
 
-https://github.com/Home-Assistant-Pro-Team/Power-Control/assets/62516592/9c10e918-f4c3-4458-83e7-35cc3fe0f49f
+Now, with these clear insights in mind, we can properly configure the power control package. What makes this package unique is its versatility: the devices that can be included in the control list may belong to different domains, such as switch, light, fan, climate, media_player, etc. There are no limits to the number of devices that can be added to the list.
 
-It is important to have a clear idea of how the electricity supply works in most cases. Take, for example, a 3 kW contract: the actual power available will be 3.3 kW, which includes a 10% reserve to handle any peak consumption. However, higher power can be used temporarily with a 33% tolerance, which equals 3,990 W, for up to 180 minutes. During this period, three checks are made to verify compliance with the power limits.
+During the device control process, specific checks are performed to determine if a device is actually in use. It is verified whether the device has a power consumption sensor (device_class power), and if so, whether the consumption exceeds the threshold of 15 W. This check helps identify if the device is actually drawing power. In the case where a device does not have a power consumption sensor, only the device's state is considered to determine if it is on or off.
 
-| Potenza  | Effettiva 	| Tolleranza 33% 	|
-| -------- | --- 	 	| ----------- 		|
-| 3.0 kW   | 3.3 kW  	| 3990 W   			|
-| 4.5 kW   | 4.9 kW  	| 5980 W  			|
-| 6.0 kW   | 6.6 kW  	| 7980 W  			|
+The system operates as follows: two minutes before reaching the set threshold for power disconnection, a high consumption warning notification is sent to allow for manual management by the user. After the two minutes have elapsed and if the consumption remains high, the devices are sequentially turned off from the list, with a 20-second interval between each. During each shutdown phase, a notification is sent to keep the user informed about the process status. In the event that the consumption remains high but no devices are found to be on in the list, a notification is sent to alert the user of the occurrence.
 
+If the emergency threshold is exceeded, the system acts immediately without considering the elapsed time. If an active device is detected, the devices are sequentially turned off.
 
-Now, with this clear information in mind, we can properly set up the power control package. What makes this package special is its versatility: the devices that can be included in the control list can belong to different domains, such as switch, light, fan, climate, media_player, etc. There is no limit to the number of devices that can be included in the list. During the device checklist process, specific checks are performed to determine whether a device is actually in use. A check is made to see whether the device has a power consumption sensor (device_class power) and, if so, whether the consumption exceeds the 15 W threshold. This check identifies whether the device is actually drawing power. In the case where a device does not have a power consumption sensor, only the state of the device itself is considered to determine whether it is on or off.
+Once the energy consumption falls below the preset disconnection threshold for the specified time, the system initiates the restoration process. The devices are reactivated in reverse order from the sequence in which they were turned off, taking into account the power consumption they had when they were turned off, with notifications sent to inform the user about the restoration status. Specific devices can be excluded from the restoration by selecting them through a dedicated selection menu. At the end of the restoration process, a final notification is sent to confirm that all devices have been successfully reactivated and that the energy consumption has returned to normal.
 
-The operation of the system is as follows: two minutes before reaching the set threshold for power disconnection, a high consumption warning notification is sent to allow manual management by the user. After the two minutes have elapsed and if consumption still remains high, the devices are turned off in sequential order from the list, with a 20-second interval between each. During each shutdown phase, a notification is sent to stay informed about the status of the process. In the event that consumption remains high but there are no devices turned on in the list, a notification is sent to alert the user of the event.
+NB:
 
-If the emergency threshold is exceeded, the system acts immediately without considering the elapsed time. Initially, it is checked whether, in the last 30 seconds, a device on the list has been turned on, also taking into account its power consumption. If an active device is detected, it is immediately turned off and temporarily excluded from load restoration. Conversely, if no active devices have been detected in the last 30 seconds, devices are turned off in sequential order as in the case of exceeding the normal threshold.
+- The push notifications will be sent only to the people who are currently at home
+- The package does not take into account the power consumption status in the case of 'multiswitch' devices, e.g., Shelly 4PM.
 
-Once power consumption falls below the detachment threshold for the preset time, the system starts the restoration process. Devices are reactivated in reverse order of the order in which they were turned off, with notifications sent to inform the user of the restoration status. Specific devices can be excluded from restoration by selecting them through a dedicated selection menu. When the restore process is complete, a final notification is sent to confirm that all devices have been successfully reactivated and power consumption is back to normal.
-
-NB: Push notifications will be sent only to people in the home.
-
-
-### **Requisiti packages**
-- [HomeAssitant release 2023.4 ](https://www.home-assistant.io/blog/2023/04/05/release-20234/)
+### **Requirements packages**
+- [HomeAssitant release 2024.3 ](https://rc.home-assistant.io/blog/2024/03/06/release-20243/)
 - [Cartella Package abilitata](https://www.home-assistant.io/docs/configuration/packages/)
-- General home consumption control device es shelly em.
+- The device for general household consumption control is the Shelly EM.
 
-### **Installazione:**
+### **Installation:**
 For installation, you need to load the "custom_templates" folder in the "conf" directory of Home Assistant. If the folder already exists, you only need to copy the files into it.
 
 - **personal.jinja**
@@ -91,7 +94,6 @@ For installation, you need to load the "custom_templates" folder in the "conf" d
     In this file, simply enter your entities of the devices you wish to turn off, in order of priority sequence. The first device in the list will be the first to be turned off (if turned on), followed by the second device, and so on.
 
 	```
-	{% macro entities_control() %}
 		{% set list_entities = 
 			[
 				'switch.idromassaggio',
@@ -102,10 +104,6 @@ For installation, you need to load the "custom_templates" folder in the "conf" d
 				'switch.forno'
 			]
 		%}
-		{% for d in list_entities %}
-			{{ d }}
-		{% endfor %}
-	{% endmacro %}
 	```
 
 	In addition, it is necessary to insert the sensor that measures the instantaneous general household absorption, expressed in watts (W).
@@ -119,13 +117,13 @@ For installation, you need to load the "custom_templates" folder in the "conf" d
 	{% endmacro %}
 	```
 
-At this point, you can load the power_control folder in the "packages" directory and restart Home Assistant.
+At this point, you can upload the folder [power_control](packages/power_control) and the file [entities_generali](packages/entities_generali.yaml) into the 'packages' directory and restart Home Assistant.
 
 ### **Card:**
 
-#### **Requisiti card:**
+#### **Requirements card:**
 
-- Sensore power (W) incluso nel [recorder](https://www.home-assistant.io/integrations/recorder/)
+- Power sensor (W) included in the [recorder](https://www.home-assistant.io/integrations/recorder/)
 - [Browser mode](https://github.com/thomasloven/hass-browser_mod) 
 - [Button card](https://github.com/custom-cards/button-card)
 - [Card Mod](https://github.com/thomasloven/lovelace-card-mod)
@@ -133,12 +131,12 @@ At this point, you can load the power_control folder in the "packages" directory
 - [Mushroom](https://github.com/piitaya/lovelace-mushroom)
 
 
-#### **Installazione card:**
-To use the card, we need to follow some simple steps. We start by creating a new manual card and copy the contents of the file "card.txt" and enter the power sensor used previously in the power_meter variable.
+#### **Installation card:**
+To use the card, we need to follow some simple steps. We start by creating a new manual card and copy the contents of the file "[card.txt](card.txt)" and enter the power sensor used previously in the power_meter variable.
 
 ![variables](example/variables.png)
 
-#### **Spiegazione card:**
+#### **Explanation card:**
 It is possible to turn load control on or off by pressing the button.
 
 ![power_on](example/power_on.png)	![power_off](example/power_off.png)
@@ -171,11 +169,11 @@ The card has 4 buttons at the bottom, each of which has a specific function. Bel
 
 4) This function enables notifications for alexa media players and TTS (e.g., Google)
 
-### **Contributi**
+### **Contributions**
 This project is open for contributions. If you would like to provide feedback, report a bug, or request a new feature, please create an issue on the repository.
 
 
-### **Supportaci**
+### **Support us**
 If you enjoyed this project, we would love to have your support. Even a simple coffee can make a difference. 
 The funds raised will be used to purchase new equipment and carry out new projects. You can contribute by clicking on the button below. 
 Thank you very much for your support!
@@ -202,3 +200,26 @@ Thank you very much for your support!
 			{% endif %}
 		```
 	- The logic of restarting loads has been modified. Now, instead of relying only on the disconnection threshold, a reactivation threshold has been added to avoid unwanted continuous cycling. In addition, a fixed time of 20 seconds has been set for power-up between loads.
+
+#### **Version: 1.5:**
+
+- Solved the 255-character limit for the list of devices to be turned off.
+- Modified macro template
+- Added recovery and restoration of volume for Alexa and Google.
+- Fixed issue preventing exclusion of devices from load restoration.
+- Changed sensor.marquee_power_control.
+- Changed power variable used by the automation.
+- Added entities_generali.yaml file containing entities used in all packages of this GitHub repository.
+
+#### **Version: 2.0:**
+
+- Modified the macro template, now based on a dict.
+- Removed the function that turned off devices turned on in the last 30 seconds.
+- Added power consumption control for individual devices (where power data is available) before restoring the device.
+- Modified most of the templates.
+- Restored the date for sensor.marquee_power_control.
+- Updated the list of loads in the card, now including power consumption where available.
+- Fixed a bug that caused malfunctioning of the package in the presence of multiswitch devices, such as the Shelly 4PM. However, for these devices, actual power consumption is not currently considered.
+- Added time range for notifications via media_player (default setting: 9-22).
+- Modified push notification messages. Now notifications include the tag and display all used appliances.
+- To update, replace the files: notify_media_control_power.yaml, control_power.yaml, power_control.jinja, and card.txt
