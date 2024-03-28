@@ -1,9 +1,19 @@
+homeassistant:
+  customize:
+    package.node_anchors:
+    # se orario inizio e fine vengono impostati entrambi in 00:00:00 le notifiche media_player saranno attive h24
+      orario inizio notifica: &hours_start "09:00:00"
+      orario fine notifica: &hours_end "22:00:00"
+
+##############################################################
+#         DA QUESTO PUNTO NON MODIFICARE
+##############################################################
 automation:
   - alias: notify_control_power_media_player
     id: notify_control_power_media_player
     mode: queued
     variables:
-      volume: 0.5
+      volume: 0.4
       alexa: >-
         {% from 'personal.jinja' import media_players %}
         {{ media_players('alexa_media').split() }}
@@ -16,13 +26,16 @@ automation:
         event_type: customizations
         event_data:
           types: notify_power_control
+    condition:
+      - condition: time
+        after: *hours_start
+        before: *hours_end
     action:
       - alias: Imposta volume Notifica
         service: media_player.volume_set
         data:
           entity_id: "{{ google + alexa }}"
           volume_level: "{{ trigger.event.data.volume | default(volume) }}"
-
       - alias: INVIA NOTIFICA
         parallel:
           - alias: GOOGLE
@@ -32,7 +45,6 @@ automation:
                 data:
                   entity_id: "{{ google }}"
                   message: "{{ trigger.event.data.message | default('Messaggio non impostato') }}"
-
           - alias: ALEXA
             if: >-
               {{ alexa | count > 0}}

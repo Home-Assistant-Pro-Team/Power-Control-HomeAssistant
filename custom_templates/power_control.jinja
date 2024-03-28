@@ -3,6 +3,7 @@
        'switch.idromassaggio',
        'climate.camera_ac',
        'climate.salotto',
+       'light.luce_tavolo',
        'climate.condizionatore_salone',
        'switch.lavatrice1pm'
     ]
@@ -17,26 +18,25 @@
 ##############################################################
 #         DA QUESTO PUNTO NON MODIFICARE
 ##############################################################
-
-{% macro entities_control() %}
-    {% for d in list_entities %}
-        {{ d }}
-    {% endfor %}
-{% endmacro %}
-
-{% macro list_device() %}
+{% macro dict_device() %}
     {% set output = namespace(sensor_power_off=[], general_entity_on=[]) %}
-    {# escludi spenti e non disponibili #}
-    {%- for entity_on in list_entities if not states[entity_on].state in ['off', 'unavailable', 'unknown'] -%}
-        {%- set output.general_entity_on = output.general_entity_on + [entity_on] -%}
-        {# recupera tutte le entità del dispositivo #}
-        {%- set entities_devices = entity_on | device_id | device_entities -%}
-            {# Restituisci entity_id del sensore power se associato #}
-            {%- set sensor_power = expand(entities_devices) | selectattr('state', 'is_number') | selectattr('domain', 'eq', 'sensor') | selectattr('attributes.device_class', 'defined') | selectattr('attributes.device_class', 'eq', 'power') | map(attribute='entity_id') | list -%}
-        {# controlla che assorbimento sia minore di 15W #}
-        {%- for entity_power_off in sensor_power if states(entity_power_off) | int(0) < 15 -%}
-            {%- set output.sensor_power_off = output.sensor_power_off + [entity_on] -%} 
-        {% endfor -%}  
-    {% endfor -%}   
-    {{ output.general_entity_on | reject('in',  output.sensor_power_off) | join(' ') }}
+    {
+        {%- for entity_on in list_entities if has_value(entity_on) -%}
+            {%- set output.general_entity_on = output.general_entity_on + [entity_on] -%}
+            {# recupera tutte le entità del dispositivo #}
+            {%- set entities_devices = entity_on | device_id | device_entities -%}
+                {# Restituisci entity_id del sensore power se associato #}
+                {% set list_sensor_power = expand(entities_devices) | selectattr('state', 'is_number') | selectattr('domain', 'eq', 'sensor') | selectattr('attributes.device_class', 'defined') | selectattr('attributes.device_class', 'eq', 'power') | map(attribute='entity_id') | list %}
+                {% set sensor_power = list_sensor_power[0] if list_sensor_power | count == 1 else 'sconosciuto' %}
+                "{{ state_attr(entity_on, 'friendly_name') }}": 
+                {
+                "entity" : "{{ entity_on }}",
+                "state" : "{{ states(entity_on) }}",
+                "sensor_power" : "{{ sensor_power }}",
+                "power" : "{{ states(sensor_power) if sensor_power != 'sconosciuto' else 'sconosciuto'  }}",
+                "real_active" : "{{ 'on' if (not is_state(entity_on, 'off') and sensor_power == 'sconosciuto') or sensor_power != 'sconosciuto' and states(sensor_power) | int(0) > 15 else 'off' }}"
+                }
+                {%- if not loop.last %},{% endif %}
+        {% endfor -%}
+    }
 {% endmacro %}

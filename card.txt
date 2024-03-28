@@ -1,6 +1,6 @@
 type: custom:button-card
 variables:
-  power_meter: sensor.shelly_em_assorbimento_casa
+  power_meter: sensor.generale_power
 triggers_update: all
 styles:
   card:
@@ -25,7 +25,7 @@ custom_fields:
         ha-card {  
           background: none;  
           border: 100px;  
-          }  
+          }
       name: |
         [[[
           if (states['sensor.marquee_power_control'].state !== 'unknown') { 
@@ -40,7 +40,7 @@ custom_fields:
       label: |
         [[[ 
             return 'Instantaneo '+ states[variables.power_meter].state + 'W'; 
-        ]]] 
+        ]]]
       show_label: true
       tap_action:
         action: none
@@ -63,7 +63,7 @@ custom_fields:
         name:
           - font-weight: bold
           - font-size: clamp(16px, 30px, 35px)
-          - letter-spacing: '-2.0px'
+          - letter-spacing: "-2.0px"
           - justify-self: left
           - padding-left: 25px
           - color: var(--primary-text-color)
@@ -81,12 +81,12 @@ custom_fields:
                   return 'Distacco tra '; }
                 else { 
                   return 'Assorbibento: Ok👍'; } 
-              ]]] 
+              ]]]
             show_icon: false
             show_state: |
               [[[ 
                 return (states['timer.distacco_carico'].state !== 'idle'); 
-              ]]] 
+              ]]]
             styles:
               card:
                 - background-color: |
@@ -97,15 +97,15 @@ custom_fields:
                         return 'red'; } 
                       else { 
                         return 'var(--disabled-text-color)';} 
-                    ]]] 
+                    ]]]
                 - border-style: none
                 - width: calc(140% - 5px)
                 - height: 30px
                 - margin-left: 6px
                 - justify-self: left
               name:
-                - margin-left: '-4px'
-                - margin-top: '-4px'
+                - margin-left: "-4px"
+                - margin-top: "-4px"
   logo:
     card:
       type: custom:button-card
@@ -113,22 +113,22 @@ custom_fields:
       entity: automation.power_control
       name: |
         [[[ 
-         if (states['automation.power_control'].state == 'on') return "Attivo"; 
-         else return "Spento"; 
-        ]]] 
+        if (states['automation.power_control'].state == 'on') return "Attivo"; 
+        else return "Spento"; 
+        ]]]
       icon: |
         [[[ 
-         if (states['automation.power_control'].state == 'on') return "mdi:head-flash"; 
-         else return "mdi:hand-back-right-off"; 
-        ]]] 
+        if (states['automation.power_control'].state == 'on') return "mdi:head-flash"; 
+        else return "mdi:hand-back-right-off"; 
+        ]]]
       show_entity_picture: false
       styles:
         card:
           - background-color: |
               [[[ 
-                 if (states['automation.power_control'].state == 'on') return "OliveDrab   "; 
-                 else return "#606060"; 
-               ]]] 
+                if (states['automation.power_control'].state == 'on') return "OliveDrab   "; 
+                else return "#606060"; 
+              ]]]
           - border-radius: 30%
           - border-style: none
           - padding-bottom: 6px
@@ -142,9 +142,9 @@ custom_fields:
           - width: calc(70% - 8px)
           - color: |
               [[[ 
-                 if (states['automation.power_control'].state == 'on') return "white   "; 
-                 else return "#252525"; 
-               ]]] 
+                if (states['automation.power_control'].state == 'on') return "white   "; 
+                else return "#252525"; 
+              ]]]
       tap_action:
         action: call-service
         service: automation.toggle
@@ -159,7 +159,7 @@ custom_fields:
         show_states: false
         colorize_states: true
       series:
-        - entity: '[[[return variables.power_meter ]]]'
+        - entity: "[[[return variables.power_meter ]]]"
           stroke_width: 2
           show:
             extremas: true
@@ -170,7 +170,7 @@ custom_fields:
             background: none;  
             width: 97%;  
             padding-left: 10px  
-            }  
+            }
   lista:
     card:
       type: custom:button-card
@@ -203,7 +203,7 @@ custom_fields:
                 :host { 
                   --ha-card-background: var(--app-header-background-color); 
                   --mdc-dialog-scrim-color: rgba(15,15,15,0.9); 
-                  } 
+                  }
             content:
               type: vertical-stack
               cards:
@@ -213,7 +213,7 @@ custom_fields:
                       background: var(--ha-card-background);
                       border: 100px; 
                       border-radius: 0px;
-                      }  
+                      }
                   entity: select.escludi_dispositivi_dal_ripristino_carico
                   fill_container: true
                   icon_type: none
@@ -224,7 +224,7 @@ custom_fields:
                       background: var(--ha-card-background);
                       border: 100px; 
                       border-radius: 0px;
-                      }  
+                      }
                   content: >-
                     ```  {% if
                     state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico',
@@ -243,13 +243,18 @@ custom_fields:
                       background: var(--ha-card-background);
                       border: 100px; 
                       border-radius: 0px;
-                      }  
+                      }
                   content: |-
-                    **Lista carichi** 
-                    {% from 'power_control.jinja' import entities_control %} 
-                      {% for entities in entities_control().split() %} 
-                        {{ states[entities].name + ': ' + states[entities].state -}} 
-                      {% endfor %} 
+                    **<center>Lista carichi<center>**
+                    {% from 'power_control.jinja' import dict_device %}
+                    {% set my_dict = (dict_device() | from_json)  %}  
+
+                    | Dispositivo &nbsp;| Stato &nbsp;| Consumo  |
+                    |:--------|:---------:|:-------------:|
+                    |{% for device_name, device_info in my_dict.items() %}
+                      | {{ device_name }} &nbsp;  | {{ device_info['state'] | upper }} &nbsp; |  {{ device_info['power'] ~ ' W' if device_info['power']  != 'sconosciuto'}} | 
+                    |{% endfor %}
+
   setting:
     card:
       type: custom:button-card
@@ -277,7 +282,7 @@ custom_fields:
               style: |
                 :host {  
                   --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
-                  }  
+                  }
             content:
               type: custom:button-card
               styles:
@@ -288,7 +293,7 @@ custom_fields:
                   - grid-template-areas: |-
                       " . tempi     soglie        . " 
                       " . rit_dist  dis_carichi   . "   
-                      " . rit_ripr  dis_emergenza . "   
+                      " . rit_ripr  dis_emergenza . "
                   - grid-template-columns: 0.1vw repeat(2, 1fr) 0.1vw
                   - grid-column-gap: 0.3em
                   - grid-row-gap: 0.3em
@@ -299,9 +304,12 @@ custom_fields:
                       ha-card {  
                         background: none;  
                         border: 100px;  
-                        }  
+                        }
                     type: custom:button-card
                     name: Tempi
+                    styles:
+                      name:
+                        - font-weight: bolder
                     tap_action:
                       action: none
                 rit_dist:
@@ -321,7 +329,7 @@ custom_fields:
                         :host {  
                           --ha-card-background: var(--card-background-color);  
                           --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
-                          }  
+                          }
                 rit_ripr:
                   card:
                     type: custom:mushroom-number-card
@@ -339,16 +347,19 @@ custom_fields:
                         :host {  
                           --ha-card-background: var(--card-background-color);  
                           --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
-                          } 
+                          }
                 soglie:
                   card:
                     style: |
                       ha-card {  
                         background: none;  
                         border: 100px;  
-                        }  
+                        }
                     type: custom:button-card
                     name: Valori
+                    styles:
+                      name:
+                        - font-weight: bolder
                     tap_action:
                       action: none
                 dis_carichi:
@@ -361,7 +372,7 @@ custom_fields:
                         :host {  
                           --ha-card-background: var(--card-background-color);  
                           --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
-                          } 
+                          }
                 dis_emergenza:
                   card:
                     type: custom:mushroom-number-card
@@ -378,25 +389,24 @@ custom_fields:
                         :host {  
                           --ha-card-background: var(--card-background-color);  
                           --mdc-dialog-scrim-color: rgba(15,15,15,0.9);  
-                          }  
+                          }
   push:
     card:
       type: custom:button-card
       color: transparent
       show_name: false
-      name: Power
       icon: |
         [[[  
-         if (states['automation.notify_control_power_push'].state == 'on') return "mdi:cellphone-check";  
-         else return "mdi:cellphone-off";  
-        ]]]  
+        if (states['automation.notify_control_power_push'].state == 'on') return "mdi:cellphone-check";  
+        else return "mdi:cellphone-off";  
+        ]]]
       styles:
         card:
           - background-color: |
               [[[  
-                 if (states['automation.notify_control_power_push'].state == 'on') return "var(--primary-color)";  
-                 else return "var(--disabled-color)"; 
-               ]]]  
+                if (states['automation.notify_control_power_push'].state == 'on') return "var(--primary-color)";  
+                else return "var(--disabled-color)"; 
+              ]]]
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
@@ -406,9 +416,9 @@ custom_fields:
           - align-self: center
           - color: |
               [[[  
-                 if (states['automation.notify_control_power_push'].state == 'on') return "white   ";  
-                 else return "dimGray"; 
-               ]]]  
+                if (states['automation.notify_control_power_push'].state == 'on') return "white   ";  
+                else return "dimGray"; 
+              ]]]
       tap_action:
         action: call-service
         service: automation.toggle
@@ -419,19 +429,18 @@ custom_fields:
       type: custom:button-card
       color: transparent
       show_name: false
-      name: Power
       icon: |
         [[[  
-         if (states['automation.notify_control_power_media_player'].state == 'on') return "mdi:account-voice";  
-         else return "mdi:speaker-off";  
-        ]]]  
+        if (states['automation.notify_control_power_media_player'].state == 'on') return "mdi:account-voice";  
+        else return "mdi:speaker-off";  
+        ]]]
       styles:
         card:
           - background-color: |
               [[[  
-                 if (states['automation.notify_control_power_media_player'].state == 'on') return "var(--primary-color)";  
-                 else return "var(--disabled-color)"; 
-               ]]]  
+                if (states['automation.notify_control_power_media_player'].state == 'on') return "var(--primary-color)";  
+                else return "var(--disabled-color)"; 
+              ]]]
           - border-radius: 18px
           - border-style: none
           - box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.2)
@@ -441,9 +450,9 @@ custom_fields:
           - align-self: center
           - color: |
               [[[  
-                 if (states['automation.notify_control_power_media_player'].state == 'on') return "white   ";  
-                 else return "dimGray"; 
-               ]]]  
+                if (states['automation.notify_control_power_media_player'].state == 'on') return "white   ";  
+                else return "dimGray"; 
+              ]]]
       tap_action:
         action: call-service
         service: automation.toggle

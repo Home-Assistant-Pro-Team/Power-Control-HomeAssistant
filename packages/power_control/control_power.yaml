@@ -42,57 +42,14 @@ template:
       - name: "Escludi dispositivi dal ripristino carico"
         state: "{{ states('sensor.dispositivi_esclusi_dal_ripristino_carico') }}"
         options: >-
-          {% from 'power_control.jinja' import entities_control %}
-            {{ ['RESET'] + expand(entities_control().split()) | map(attribute='name') | list }}
+          {% from 'power_control.jinja' import dict_device %}
+          {{  ['RESET'] + ( dict_device() | from_json ).keys() |list }}
         select_option:
           - event: customizations
             event_data:
               types: power_control
               sensor_select: "{{ option }}"
-  - sensor:
-      - name: Lista carichi
-        state: >-
-          {% from 'power_control.jinja' import entities_control %}
-            {{ entities_control().split() | count }}
-        attributes:
-          list_device: >-
-            {% from 'power_control.jinja' import entities_control %}
-              {{ entities_control() }}
-          list_device_name: >-
-            {% from 'power_control.jinja' import entities_control %}
-            {{ expand(entities_control().split()) | map(attribute='name') | list }}
-          list_state_switch: >-
-            {% from 'power_control.jinja' import entities_control %}
-            {{ expand(entities_control().split()) | map(attribute='state') | list }}
 
-  - sensor:
-      - name: Lista dispositivi accesi
-        state: >-
-          {% from 'power_control.jinja' import list_device %}
-            {{ list_device().split() | count }}
-        attributes:
-          list_device_name: >-
-            {% from 'power_control.jinja' import list_device %}
-              {{ expand(list_device().split()) | map(attribute='name') | list }}
-
-  - sensor:
-      - name: Ultimo dispositivo acceso
-        state: >-
-          {% set a = states('sensor.check_ultimo_acceso').split() | default %}
-          {% set b = state_attr('sensor.check_ultimo_acceso', 'old_state').split() | default %}
-          {% set result = (a | list | reject('in', b) | list)[0] %}
-            {{ result if result is defined else 'Nessuno' }}
-  - trigger:
-      - platform: state
-        entity_id: sensor.lista_dispositivi_accesi
-    sensor:
-      - name: check_ultimo_acceso
-        state: >-
-          {% from 'power_control.jinja' import list_device %}
-          {% set power = list_device() %}
-            {{ power }}
-        attributes:
-          old_state: "{{ this.state }}"
   - trigger:
       - platform: event
         event_type: customizations
@@ -103,20 +60,19 @@ template:
         state: "{{ trigger.event.data.sensor_select }}"
         attributes:
           list_exclude: >-
-            {% from 'power_control.jinja' import entities_control %}
-            {% set list_power = entities_control() %}
+            {% from 'power_control.jinja' import dict_device %}
+            {% set my_dict = (dict_device() | from_json)  %}
             {% set lists = this.attributes.list_exclude %}
-              {% if option == 'RESET' %}
+            {% for device_name, device_info in my_dict.items() if device_name == trigger.event.data.sensor_select %}
+              {% if device_info['entity'] in lists %}
+                {{ lists | list | select('ne',device_info['entity']) | list }}
               {% else %}
-                {% for device in states if device.name|lower == trigger.event.data.sensor_select | lower and device.entity_id in list_power %}
-                  {% if device.entity_id in lists %}
-                    {{ lists | list | select('ne',device.entity_id) | list }}
-                  {% else %}
-                    {% set ns = namespace(entities=lists | list | select('ne', device.entity_id) | list) %}
-                      {{ ns.entities + [device.entity_id] }}
-                  {% endif %}
-                {% endfor %}
+                {% set ns = namespace(entities=lists | list | select('ne', device_info['entity']) | list) %}
+                  {{ ns.entities + [device_info['entity']] }}
               {% endif %}
+            {% else %}
+            {% endfor %}
+
   - trigger:
       - platform: state
         entity_id: input_boolean.check_distacco
@@ -131,13 +87,13 @@ template:
       - name: marquee power control
         state: >-
           {% if trigger.entity_id == 'input_boolean.check_distacco' %}
-            {{ 'Ultimo intervento effettuato ' + relative_time(states['input_boolean.check_distacco'].last_changed) | replace('years', 'anni') | replace('year', 'anno') | replace('days','giorno') | replace('day','giorni') | replace ('hours','ore') | replace ('hour','ora') | replace ('minutes','minuti') | replace ('minute','minuto') | replace ('seconds','secondi') + ' fa'}}
+            {{ 'Ultimo intervento il ' ~ as_local(states['input_boolean.check_distacco'].last_changed).strftime('%d/%m/%Y %H:%M') }}
           {% else %}
-            {{ trigger.event.data.message|default('Messaggio non impostato') }}
+            {{ trigger.event.data.message | default('Messaggio non impostato') }}
           {% endif %}
 
 input_text:
-  list_power_control:
+  list_device_power_on:
     initial: "none"
     max: 255
 
@@ -154,41 +110,42 @@ automation:
         {% from 'power_control.jinja' import power_control %}
         {{ (power_control() | from_json)['Sensore W'] }}
     trigger:
-      - platform: template
-        alias: "Superamento soglia 2 minuti prima del distacco"
+      - alias: "Superamento soglia 2 minuti prima del distacco"
+        platform: template
         value_template: >-
-          {% if state_attr('timer.distacco_carico', 'finishes_at') is not none %}
-            {{ now() > as_datetime(state_attr('timer.distacco_carico', 'finishes_at')) - timedelta(minutes=2) }}
+          {% set finishes_at = state_attr('timer.distacco_carico', 'finishes_at') %}
+          {% if finishes_at %}
+              {{ now() > as_datetime(finishes_at) - timedelta(minutes=2) }}
           {% else %}
-            False
+              False
           {% endif %}
         id: preavviso_distacco
-      - platform: template
-        alias: "Raggiunta soglia per distacco avvia timer"
+      - alias: "Raggiunta soglia per distacco avvia timer"
+        platform: template
         value_template: >-
           {% from 'power_control.jinja' import power_control %}
           {% set power = states[(power_control() | from_json)['Sensore W']].state | int(0) %}
             {{ power > states('input_number.distacco_carico') | int(0) }}
         id: soglia_distacco
-      - platform: template
-        alias: "Inizio distacco carichi URGENTE"
+      - alias: "Inizio distacco carichi URGENTE"
+        platform: template
         value_template: >-
           {% from 'power_control.jinja' import power_control %}
           {% set power = states[(power_control() | from_json)['Sensore W']].state | int(0) %}
             {{ power > states('input_number.distacco_urgente') | int(0) }}
         id: inizio_distacco
-      - platform: event
-        alias: "Inizio distacco carichi"
+      - alias: "Inizio distacco carichi"
+        platform: event
         event_type: timer.finished
         event_data:
           entity_id: timer.distacco_carico
         id: inizio_distacco
-      - platform: template
-        alias: "Consumi tornati regolare rispistina carichi"
+      - alias: "Consumi tornati regolare rispistina carichi"
+        platform: template
         value_template: >-
           {% from 'power_control.jinja' import power_control %}
           {% set power = states[(power_control() | from_json)['Sensore W']].state | int(0) %}
-            {{ power < states('input_number.ripristino_carico')|int(0) }}
+            {{ power < states('input_number.ripristino_carico') | int(0) }}
         for:
           seconds: "20"
         id: ripristino_carico
@@ -228,90 +185,77 @@ automation:
             data:
               value: none
             target:
-              entity_id: "input_text.list_power_control"
+              entity_id: "input_text.list_device_power_on"
           - repeat:
               until:
                 - >-
                   {% from 'power_control.jinja' import power_control %}
                   {{ states[(power_control() | from_json)['Sensore W']].state | int(0) > states('input_number.distacco_carico') | int(0) }}
               sequence:
-                - alias: Spegni device della lista se acceso negli ultimi 30sec per distacco urgente ed escludilo dal ripristino
-                  if:
-                    - "{{ states(power) | int(0) > states('input_number.distacco_urgente') | int(0) }}"
-                    - "{{ now() < states['sensor.ultimo_dispositivo_acceso'].last_changed + timedelta(seconds=30) and not is_state('sensor.ultimo_dispositivo_acceso', 'Nessuno') }}"
-                  then:
-                    - alias: INVIA NOTIFICA
-                      event: customizations
-                      event_data:
-                        #critical: 1
-                        types: notify_power_control
-                        title: --DISTACCO URGENTE--
-                        message: "{{ 'Spegnimento ' ~ states[states('sensor.ultimo_dispositivo_acceso')].name ~ '. Superati i ' ~ states(power,  with_unit=true)  }}"
-                    - alias: Spegni il carico
-                      service: homeassistant.turn_off
-                      target:
-                        entity_id: "{{ states('sensor.ultimo_dispositivo_acceso') }}"
-                    - alias: Attiva bollean per sapere che distacco carichi è stato attivato
-                      service: input_boolean.turn_on
-                      target:
-                        entity_id: input_boolean.check_distacco
-                    - alias: Ritardo prossimo controllo per distacco
-                      delay:
-                        seconds: 10
-                  else:
-                    - alias: Esegui loop per distacco carichi
-                      repeat:
-                        count: >-
-                          {% from 'power_control.jinja' import list_device %}
-                            {{ list_device().split() | count + 1 }}
-                        sequence:
-                          - variables:
-                              power_device: >-
-                                {% from 'power_control.jinja' import list_device %}
-                                  {{ list_device().split() }}
-                          - choose:
-                              - conditions:
-                                  - alias: Verifica se consumo ancora elevato
-                                    condition: template
-                                    value_template: >-
-                                      {{ states(power) | int(0) > states('input_number.distacco_carico') | int(0) }}
-                                  - alias: Controlla che ci siano device in uso
-                                    condition: template
-                                    value_template: "{{ power_device | count > 0 }}"
-                                sequence:
-                                  - alias: Attiva bollean per sapere che distacco carichi è stato attivato
-                                    service: input_boolean.turn_on
-                                    target:
-                                      entity_id: input_boolean.check_distacco
-                                  - alias: Salva lista carichi spenti
-                                    service: input_text.set_value
-                                    data:
-                                      value: >-
-                                        {{ power_device[0] + ( ' ' + states('input_text.list_power_control') if not is_state('input_text.list_power_control', 'none') else ' ') }}
-                                    target:
-                                      entity_id: input_text.list_power_control
-                                  - alias: INVIA NOTIFICA
-                                    event: customizations
-                                    event_data:
-                                      types: notify_power_control
-                                      message: "{{ 'Spegnimento ' ~ states[power_device[0]].name ~ '. Superati i ' ~ states(power,  with_unit=true) }}"
-                                  - alias: Spegni il carico
-                                    service: homeassistant.turn_off
-                                    target:
-                                      entity_id: "{{ power_device[0] }}"
-                                  - alias: Ritardo prossimo controllo per distacco
-                                    delay:
-                                      seconds: 20
-                            default:
+                - alias: Esegui loop per distacco carichi
+                  repeat:
+                    count: >-
+                      {% from 'power_control.jinja' import dict_device %}
+                      {% set my_dict = (dict_device() | from_json)  %}         
+                      {{ my_dict.values() | selectattr('real_active','eq','on') | list | count + 1 }}
+                    sequence:
+                      - variables:
+                          device_on: >-
+                            {% from 'power_control.jinja' import dict_device %}
+                            {% set my_dict = (dict_device() | from_json)  %}         
+                            {{ my_dict.values() | selectattr('real_active','eq','on') | map(attribute='entity')| list }}
+                          power_on: >-
+                            {% from 'power_control.jinja' import dict_device %}
+                            {% set my_dict = (dict_device() | from_json)  %}         
+                            {{ my_dict.values() | selectattr('real_active','eq','on') | map(attribute='power')| list }}
+                      - choose:
+                          - conditions:
                               - alias: Verifica se consumo ancora elevato
                                 condition: template
-                                value_template: "{{ states(power) | int(0) > states('input_number.distacco_carico') | int(0) }}"
+                                value_template: >-
+                                  {{ states(power) | int(0) > states('input_number.distacco_carico') | int(0) }}
+                              - alias: Controlla che ci siano device in uso
+                                condition: template
+                                value_template: "{{ device_on | count > 0 }}"
+                            sequence:
+                              - alias: Attiva bollean per sapere che distacco carichi è stato attivato
+                                service: input_boolean.turn_on
+                                target:
+                                  entity_id: input_boolean.check_distacco
+                              - alias: "Salva dispositi : potenza"
+                                service: input_text.set_value
+                                data:
+                                  value: >-
+                                    "{{ device_on[0] }}" : "{{ power_on[0] }}" {{ (', ' ~ states('input_text.list_device_power_on') if not is_state('input_text.list_device_power_on', 'none') else ' ') }}
+                                target:
+                                  entity_id: input_text.list_device_power_on
                               - alias: INVIA NOTIFICA
                                 event: customizations
                                 event_data:
                                   types: notify_power_control
-                                  message: "{{ 'ATTENZIONE. Superati i ' ~ states(power,  with_unit=true) ~ '! Non ci sono elettrodomestici da spegnere.' }}"
-                              - stop: TERMINA DISTACCA PER MANCANDA DISPOSITIVI
+                                  tag: helper1power
+                                  message: >-
+                                    {% set my_dict = (('{'+ states('input_text.list_device_power_on') + '}') | from_json).keys() | list%}
+                                    {% set spenti = expand(my_dict) | map(attribute='name') |list | join(', ') %}
+                                    {{ 'Spegnimento ' ~ spenti ~ '. Superati i ' ~ states(power,  with_unit=true) }}
+                              - alias: Spegni il carico
+                                service: homeassistant.turn_off
+                                target:
+                                  entity_id: "{{ (device_on)[0] }}"
+                              - alias: Ritardo prossimo controllo per distacco
+                                delay:
+                                  seconds: 20
+                        default:
+                          - alias: Verifica se consumo ancora elevato
+                            condition: template
+                            value_template: "{{ states(power) | int(0) > states('input_number.distacco_carico') | int(0) }}"
+                          - alias: INVIA NOTIFICA
+                            event: customizations
+                            event_data:
+                              types: notify_power_control
+                              tag: helper2power
+                              message: "{{ 'ATTENZIONE. Superati i ' ~ states(power,  with_unit=true) ~ '! Non ci sono elettrodomestici da spegnere.' }}"
+                          - stop: TERMINA DISTACCA PER MANCANDA DISPOSITIVI
       - alias: Ripristino carico
         if:
           - "{{ trigger.id == 'ripristino_carico' }}"
@@ -324,20 +268,32 @@ automation:
                 condition: template
                 value_template: "{{ is_state('input_boolean.check_distacco', 'on') }}"
             then:
+              - variables:
+                  device_off: >-
+                    {
+                    {{ states('input_text.list_device_power_on') }}
+                    }
               - alias: Ripristino carico
                 repeat:
                   for_each: >-
-                    {% set output = namespace(state_home=[]) %}
-                    {% for device in states if device.entity_id in state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %}
-                        {% set output.state_home = output.state_home + [device.entity_id] %}
-                    {% endfor %}
-                    {{states('input_text.list_power_control').split() | reject('in', output.state_home + ['none']) | list }}
+                    {% set exclude = state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %}
+                    {{ device_off.keys() | reject('in', exclude + ['none']) | list }}
                   sequence:
+                    - wait_template: >-
+                        {% set device_power = device_off[repeat.index - 1] %}
+                        {% if device_power is number %}
+                        {{ (device_power | int(0) + states(power) | int(0)) < states('input_number.distacco_carico') | int(0) }}
+                        {% else %} 
+                        true
+                        {% endif %}
+                      continue_on_timeout: true
+                      timeout: "300"
                     - alias: INVIA NOTIFICA
                       event: customizations
                       event_data:
                         types: notify_power_control
-                        message: "{{ 'Il consumo è tornato nei limiti. ' ~ states[repeat.item].name + ' è stato acceso.' }}"
+                        message: "{{ 'Il consumo è tornato nei limiti. ' ~ states[repeat.item].name ~ ' è stato acceso.' }}"
+                        tag: helper2power
                     - alias: Ripristina ultimo carico spento e non escluso
                       service: homeassistant.turn_on
                       target:
@@ -349,7 +305,11 @@ automation:
                 event: customizations
                 event_data:
                   types: notify_power_control
-                  message: I consumi sono tornati regolari e tutti gli elettrodomestici sono stati ripristinati
+                  message: >-
+                    {% set exclude = state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %}
+                    {% set my_dict = (('{'+ states('input_text.list_device_power_on') + '}') | from_json).keys() | reject('in', exclude + ['none']) | list %}
+                    {% set spenti = expand(my_dict)  | map(attribute='name') |list | join(', ') %}
+                    I consumi sono tornati regolari, {{ spenti }} sono stati ripristinati.
               - alias: Imposta il boolean in off per indicare che il ripristiono
                 service: input_boolean.turn_off
                 target:
