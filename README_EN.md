@@ -1,6 +1,6 @@
 # Power-Control
 
-`- Version: 1.3 -`
+`- Version: 2.0 -`
 
 The package was written in Italian, but can be easily translated. As for the translation of the README, we relied on automatic translators and apologize for any translation errors.
 
@@ -77,7 +77,7 @@ For installation, you need to load the "custom_templates" folder in the "conf" d
 			[
 				'media_player.camera',
 				'media_player.studio',
-				'media_player.googlehome_cameretta',
+				'media_player.googlehome_cameretta', 
 				'media_player.googlehome_bagno',
 				'media_player.googlehome_cucina',
 				'media_player.googlehome_salone'
