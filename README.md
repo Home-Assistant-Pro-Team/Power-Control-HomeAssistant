@@ -31,7 +31,7 @@ NB:
 
 ### **Requisiti packages**
 
-- [HomeAssitant release 2024.](https://rc.home-assistant.io/blog/2024/03/06/release-20243/)
+- [HomeAssitant release 2024.3](https://rc.home-assistant.io/blog/2024/03/06/release-20243/)
 - [Cartella Package abilitata](https://www.home-assistant.io/docs/configuration/packages/)
 - Dispositivo per controllo consumo generale casa es shelly em.
 
@@ -93,8 +93,7 @@ Per l'installazione, è necessario caricare la cartella [custom_templates](custo
  In questo [file](custom_templates/power_control.jinja), è sufficiente inserire le proprie entità dei dispositivi che si desidera spegnere, in ordine di sequenza di priorità. Il primo dispositivo nella lista sarà il primo ad essere spento (se acceso), seguito dal secondo dispositivo e così via.
 
  ```
- {% macro entities_control() %}
-  {% set list_entities = 
+   {% set list_entities = 
    [
     'switch.idromassaggio',
     'climate.camera_ac',
@@ -104,10 +103,6 @@ Per l'installazione, è necessario caricare la cartella [custom_templates](custo
     'switch.forno'
    ]
   %}
-  {% for d in list_entities %}
-   {{ d }}
-  {% endfor %}
- {% endmacro %}
  ```
 
  Inoltre, è necessario inserire il sensore che misura l'assorbimento istantaneo generale di casa, espresso in watt (W).

@@ -39,7 +39,7 @@ custom_fields:
       type: custom:button-card
       label: |
         [[[ 
-            return 'Instantaneo '+ states[variables.power_meter].state + 'W'; 
+            return 'Istantaneo '+ states[variables.power_meter].state + 'W'; 
         ]]]
       show_label: true
       tap_action:
@@ -80,7 +80,7 @@ custom_fields:
                 else if (states['timer.distacco_carico'].state !== 'idle') { 
                   return 'Distacco tra '; }
                 else { 
-                  return 'Assorbibento: Ok👍'; } 
+                  return 'Assorbimento: Ok👍'; } 
               ]]]
             show_icon: false
             show_state: |
