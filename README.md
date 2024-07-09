@@ -1,6 +1,6 @@
 # Power-Control
 
-`- Version: 2.0 -`
+`- Version: 2.1 -`
 
 ![Immagine 2023-09-27 162710](https://github.com/Home-Assistant-Pro-Team/Power-Control-HomeAssistant/assets/48358142/278205a3-d6dd-4d7a-b5b5-9ea713940687)
 
@@ -31,7 +31,7 @@ NB:
 
 ### **Requisiti packages**
 
-- [HomeAssitant release 2024.3](https://rc.home-assistant.io/blog/2024/03/06/release-20243/)
+- [HomeAssitant release 2024.7.0](https://rc.home-assistant.io/blog/2024/07/03/release-20247/)
 - [Cartella Package abilitata](https://www.home-assistant.io/docs/configuration/packages/)
 - Dispositivo per controllo consumo generale casa es shelly em.
 
@@ -41,52 +41,19 @@ Per l'installazione, è necessario caricare la cartella [custom_templates](custo
 
 - **personal.jinja**
 
- Questo [file](custom_templates/personal.jinja) sarà utilizzato per altri progetti all'interno di questo repository GitHub. Nel file, impostiamo dati personali che verranno utilizzati in tutti i progetti. È sufficiente inserire le proprie entità rispettando l'indentazione JSON.
+	Questo file è utilizzato per altri progetti all'interno di questo repository GitHub. Nel file, impostiamo dati personali che verranno utilizzati in tutti i progetti.
+	
+	Solo nel caso si vogliano usare utilizzare le chiamate voip è necessario complilare manualmente il dizionario 'person.xx' : 'numero'.
 
- Vediamo come personalizzarlo. Anche se non tutte le informazioni sono necessarie per questo pacchetto, è consigliabile compilare tutti i campi per poter sfruttarlo appieno in altri progetti.
+	```
+	{% macro persons() %}
+	{% set numero = { 
+	'person.marco' : '33100000',
+	'person.tata' : '3340000000' 
+			} %}
+    ...............
+	```
 
- In questa sezione, definiamo le entità e i sensori per ogni persona. Se non si desidera associare un numero di cellulare o un sensore di sveglia a una persona specifica, è sufficiente assegnare il valore "none" nella sezione corrispondente del file. Per aggiungere o rimuovere persone dalla lista di dizionari, è necessario prestare attenzione alla sintassi JSON.
-
- ```
- {% macro persons() %}
- [
-  {
-   "person": "person.marco",
-   "battery": "sensor.cellulare_marco_battery_level",
-   "notify": "mobile_app_cellulare_marco",
-   "sveglia": "sensor.cellulare_marco_prossimo_allarme",
-   "cellulare": "331000000"
-  },
-  {
-   "person": "person.serena",
-   "battery": "sensor.cellulare_serena_livello_della_batteria",
-   "notify": "mobile_app_samsung_s21",
-   "sveglia": "none",
-   "cellulare": "335000000"
-  }
- ]
- {% endmacro%}
- ```
-
- In questa sezione, elencheremo i nostri media player utilizzati per le notifiche. Assicurati di inserire correttamente i media player selezionati per le notifiche Alexa e TTS (ad esempio, Google), seguendo attentamente la sintassi corretta.
-
- ```
- {% macro media_players(type) %}
-  {% set list_media = 
-   [
-    'media_player.camera',
-    'media_player.studio',
-    'media_player.googlehome_cameretta',
-    'media_player.googlehome_bagno',
-    'media_player.googlehome_cucina',
-    'media_player.googlehome_salone'
-   ]
-  %}
-  {% for integrations in integration_entities(type) if integrations in list_media %}
-   {{ integrations }}
-  {% endfor %}
- {% endmacro %}
- ```
 
 - **power_control.jinja**
 
@@ -224,3 +191,9 @@ Grazie di cuore per il tuo sostegno!
 - Aggiunta fascia oraria per le notifiche tramite media_player (impostazione predefinita: 9-22).
 - Modificati i messaggi delle notifiche push. Ora le notifiche includono il tag e mostrano tutti gli elettrodomestici utilizzati.
 - Per aggiornare sostituire i file: notify_media_control_power.yaml, control_power.yaml, power_control.jinja e card.txt
+
+#### **Version: 2.1:**
+
+- I media player Alexa e Google ora vengono riconosciuti automaticamente, senza la necessità di inserirli manualmente nella lista.
+- Le entità "person" e i relativi sensori associati (notifiche di servizio, sensore della batteria, sensore della sveglia) vengono ora riconosciuti automaticamente. È necessario specificare il numero di telefono da associare all'entità "person" solo se si desidera utilizzare le chiamate VoIP (opzionale). 
+- Recupero e ripristino volumi nelle notifiche media_player.
