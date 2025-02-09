@@ -1,6 +1,6 @@
 # Power-Control
 
-`- Version: 2.1 -`
+`- Version: 2.2 -`
 
 ![Immagine 2023-09-27 162710](https://github.com/Home-Assistant-Pro-Team/Power-Control-HomeAssistant/assets/48358142/278205a3-d6dd-4d7a-b5b5-9ea713940687)
 
@@ -197,3 +197,10 @@ Grazie di cuore per il tuo sostegno!
 - I media player Alexa e Google ora vengono riconosciuti automaticamente, senza la necessità di inserirli manualmente nella lista.
 - Le entità "person" e i relativi sensori associati (notifiche di servizio, sensore della batteria, sensore della sveglia) vengono ora riconosciuti automaticamente. È necessario specificare il numero di telefono da associare all'entità "person" solo se si desidera utilizzare le chiamate VoIP (opzionale). 
 - Recupero e ripristino volumi nelle notifiche media_player.
+
+#### **Version: 2.2:**
+
+- Eliminato problema che non riaccendeva i dispositivi se non erano persenti nella lista di esclusione
+- update service/action
+- aggiunto id_device a file person (per altri utlizzi)
+- aggiunto bool winter/summer entities_generali (per altri usi)
