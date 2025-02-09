@@ -28,7 +28,7 @@ automation:
         before: *hours_end
     action:
       - alias: Imposta volume Notifica
-        service: media_player.volume_set
+        action: media_player.volume_set
         data:
           entity_id: "{{ google + alexa }}"
           volume_level: "{{ trigger.event.data.volume | default(volume) }}"
@@ -37,7 +37,7 @@ automation:
           - alias: GOOGLE
             if: "{{ google | count > 0 }}"
             then:
-              - service: tts.google_translate_say
+              - action: tts.google_translate_say
                 data:
                   entity_id: "{{ google }}"
                   message: "{{ trigger.event.data.message | default('Messaggio non impostato') }}"
@@ -45,7 +45,7 @@ automation:
             if: >-
               {{ alexa | count > 0}}
             then:
-              - service: notify.alexa_media
+              - action: notify.alexa_media
                 data:
                   target: "{{ alexa }}"
                   data:
@@ -57,7 +57,7 @@ automation:
           for_each: "{{ alexa + google }}"
           sequence:
             - alias: Imposta volume Notifica
-              service: media_player.volume_set
+              action: media_player.volume_set
               data:
                 entity_id: "{{ repeat.item }}"
                 volume_level: "{{ volume_media_player[repeat.index - 1] }}"

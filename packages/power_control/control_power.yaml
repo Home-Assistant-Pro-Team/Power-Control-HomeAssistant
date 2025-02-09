@@ -167,7 +167,7 @@ automation:
           - "{{ trigger.id == 'soglia_distacco' }}"
         then:
           - alias: Imposta timer di attesa
-            service: timer.start
+            action: timer.start
             data:
               duration: "00:{{ states('input_number.ritardo_distacco_carico') | int(0) }}:00"
             target:
@@ -177,11 +177,11 @@ automation:
           - "{{ trigger.id == 'inizio_distacco' }}"
         then:
           - alias: Cancella timer per evitare altro trigger
-            service: timer.cancel
+            action: timer.cancel
             target:
               entity_id: timer.distacco_carico
           - alias: Elimina lista text
-            service: input_text.set_value
+            action: input_text.set_value
             data:
               value: none
             target:
@@ -219,11 +219,11 @@ automation:
                                 value_template: "{{ device_on | count > 0 }}"
                             sequence:
                               - alias: Attiva bollean per sapere che distacco carichi è stato attivato
-                                service: input_boolean.turn_on
+                                action: input_boolean.turn_on
                                 target:
                                   entity_id: input_boolean.check_distacco
                               - alias: "Salva dispositi : potenza"
-                                service: input_text.set_value
+                                action: input_text.set_value
                                 data:
                                   value: >-
                                     "{{ device_on[0] }}" : "{{ power_on[0] }}" {{ (', ' ~ states('input_text.list_device_power_on') if not is_state('input_text.list_device_power_on', 'none') else ' ') }}
@@ -239,7 +239,7 @@ automation:
                                     {% set spenti = expand(my_dict) | map(attribute='name') |list | join(', ') %}
                                     {{ 'Spegnimento ' ~ spenti ~ '. Superati i ' ~ states(power,  with_unit=true) }}
                               - alias: Spegni il carico
-                                service: homeassistant.turn_off
+                                action: homeassistant.turn_off
                                 target:
                                   entity_id: "{{ (device_on)[0] }}"
                               - alias: Ritardo prossimo controllo per distacco
@@ -260,7 +260,7 @@ automation:
         if:
           - "{{ trigger.id == 'ripristino_carico' }}"
         then:
-          - service: timer.cancel
+          - action: timer.cancel
             target:
               entity_id: timer.distacco_carico
           - if:
@@ -270,14 +270,18 @@ automation:
             then:
               - variables:
                   device_off: >-
-                    {
-                    {{ states('input_text.list_device_power_on') }}
-                    }
+                    {% set device_off = ('{ ' + states('input_text.list_device_power_on') + ' }') | from_json %} 
+                    {{ device_off  }}
+                  exclude: >-
+                    {{ state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') }}
               - alias: Ripristino carico
                 repeat:
                   for_each: >-
-                    {% set exclude = state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %}
-                    {{ device_off.keys() | reject('in', exclude + ['none']) | list }}
+                    {% if exclude | length > 0  %}
+                      {{ device_off.keys() | reject('in', exclude + ['none']) | list }}
+                    {% else %}
+                      {{ device_off.keys() | list }}
+                    {% endif %}
                   sequence:
                     - wait_template: >-
                         {% set device_power = device_off[repeat.index - 1] %}
@@ -295,7 +299,7 @@ automation:
                         message: "{{ 'Il consumo è tornato nei limiti. ' ~ states[repeat.item].name ~ ' è stato acceso.' }}"
                         tag: helper2power
                     - alias: Ripristina ultimo carico spento e non escluso
-                      service: homeassistant.turn_on
+                      action: homeassistant.turn_on
                       target:
                         entity_id: "{{ repeat.item }}"
                     - alias: Attendi per ripristinare elettrodomestici
@@ -306,11 +310,14 @@ automation:
                 event_data:
                   types: notify_power_control
                   message: >-
-                    {% set exclude = state_attr('sensor.dispositivi_esclusi_dal_ripristino_carico', 'list_exclude') %}
-                    {% set my_dict = (('{'+ states('input_text.list_device_power_on') + '}') | from_json).keys() | reject('in', exclude + ['none']) | list %}
-                    {% set spenti = expand(my_dict)  | map(attribute='name') |list | join(', ') %}
-                    I consumi sono tornati regolari, {{ spenti }} sono stati ripristinati.
+                        {% if exclude | length > 0  %}
+                          {% set my_dict = (('{'+ states('input_text.list_device_power_on') + '}') | from_json).keys() | reject('in', exclude + ['none']) | list %}
+                        {% else %}
+                          {% set my_dict = (('{'+ states('input_text.list_device_power_on') + '}') | from_json).keys() | reject('in', ['none']) | list %}
+                        {% endif %}
+                        {% set spenti = expand(my_dict)  | map(attribute='name') |list | join(', ') %}
+                        I consumi sono tornati regolari{{',' ~ spenti ~ 'sono stati ripristinati.' if spenti | length > 0 }}.
               - alias: Imposta il boolean in off per indicare che il ripristiono
-                service: input_boolean.turn_off
+                action: input_boolean.turn_off
                 target:
                   entity_id: input_boolean.check_distacco

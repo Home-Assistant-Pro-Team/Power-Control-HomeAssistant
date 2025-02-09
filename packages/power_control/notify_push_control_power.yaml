@@ -18,7 +18,7 @@ automation:
               {% endfor %}
                 {{ output.state_home }}
           sequence:
-            - service: "{{ repeat.item }}"
+            - action: "{{ repeat.item }}"
               data:
                 message: "{{ trigger.event.data.message|default('Messaggio non impostato') }}"
                 title: "{{trigger.event.data.title |default('--POWER CONTROL--') }}"

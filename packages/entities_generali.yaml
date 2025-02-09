@@ -8,6 +8,13 @@ input_number:
     mode: box
     icon: mdi:currency-eur
 
+
+input_boolean:
+  winter_summer:
+    name: Inverno estate
+  modo_ospite:
+    name: Modalità ospite
+
 template:
   - sensor:
       - name: Cambio volume media player

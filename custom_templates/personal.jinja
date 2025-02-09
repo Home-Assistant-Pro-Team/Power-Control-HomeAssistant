@@ -13,9 +13,12 @@
 			"battery": "{{ expand(ids | device_entities)  | selectattr('attributes.device_class', 'eq', 'battery') | map(attribute='entity_id') |first | default('none') }}",
 			"notify": "mobile_app_{{ device_attr(ids, 'name') | slugify }}",
 			"sveglia": "{{ expand(ids | device_entities)  | selectattr('attributes.device_class', 'eq', 'timestamp') | map(attribute='entity_id') |first | default('none') }}",
-			"cellulare": "{{numero.get(persons, 'none') }}"
+			"cellulare": "{{numero.get(persons, 'none') }}",
+            "device_id": "{{device_id(expand(ids | device_entities)  | selectattr('attributes.device_class', 'eq', 'battery') | map(attribute='entity_id') |first | default('none'))}}"
 		}
 	{%- if loop.first %},{% endif -%}
 	{% endfor %}
 	]
 {% endmacro %}
+
+{{ persons() }}
